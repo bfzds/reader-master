@@ -47,7 +47,10 @@ Tauri setup
 
 请求目标必须通过路径组件检查、canonical/real path 检查并位于静态资源根目录内；已识别的父目录、绝对路径、Windows prefix、根目录外目标和符号链接路径会被拒绝。目录请求的 `index.html` 也必须经过边界检查。
 
-CSP 维护位置有三处：
+CSP 的公共维护位置是 `config/csp-dev.txt` 和 `config/csp-prod.txt`；
+`tauri.conf.json` 保留 Tauri 所需的生产字符串副本，并由测试防止漂移。
+
+历史上 CSP 维护位置有三处：
 
 - `src-tauri/tauri.conf.json`；
 - `src-tauri/src/shell.rs`；
@@ -55,7 +58,7 @@ CSP 维护位置有三处：
 
 发布 CSP 的 `connect-src` 额外允许 `http://ipc.localhost` 以兼容 Tauri IPC；开发 Node 服务只允许自身连接。修改任一处时必须检查另外两处以及动态脚本、Worker、字体、图片和 Blob/data URL 的实际依赖。
 
-当前仍启用 `withGlobalTauri` 以兼容既有 renderer runtime。仓库没有独立维护的 `src-tauri/capabilities/*.json` 文件；folderId 是 native registry/command 边界，不是 Tauri ACL 配置文件。
+当前仍启用 `withGlobalTauri` 以兼容既有 renderer runtime。单实例插件在第二实例启动时转发参数事件并聚焦已有主窗口；固定端口仍是额外保护。窗口配置保存逻辑尺寸，resize 写入使用约 250ms 防抖，关闭事件会取消挂起任务并立即落盘。
 
 ## 4. 导入目录与 native command
 

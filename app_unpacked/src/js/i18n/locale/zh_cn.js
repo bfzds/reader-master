@@ -118,34 +118,9 @@ export default {
   configAutoTocDetect: '自动识别目录',
   configAutoTocDetectDisable: '关闭',
   configAutoTocDetectEnable: '启用',
-  configSpeechGroupTitle: '朗读',
-  configSpeechVoice: '语音',
-  configSpeechVoiceRemote: '(远程)',
-  configSpeechVoiceEmpty: '未发现可用的语音',
-  configSpeechVoicePrivacy: '使用被标记为“远程”的语音时，将要朗读的文本会被发送到第三方的服务器上。请在使用前自行确认对应服务的隐私条款。',
-  configSpeechPitch: '语调',
-  configSpeechPitchNum: pitch => {
-    if (pitch === 0) return '0 (最低)';
-    if (pitch === 2) return '2 (最高)';
-    if (pitch === 1) return '1 (默认)';
-    else return String(pitch);
-  },
-  configSpeechRate: '语速',
-  configSpeechRateNum: rate => {
-    if (rate === 1) return '1× (默认)';
-    return rate + '×';
-  },
-  configSpeechTapPage: '朗读时点按翻页',
-  configSpeechTapPageEnable: '允许',
-  configSpeechTapPageDisable: '禁用',
-  configSpeechTapPageDescription: '禁用点按翻页后您仍然可以滑动屏幕翻页。',
-  configSpeechPauseInBackground: '在后台时暂停',
-  configSpeechPauseInBackgroundPause: '暂停',
-  configSpeechPauseInBackgroundContinue: '继续',
   configScreenGroupTitle: '屏幕',
   configAutoLock: '自动锁屏',
   configAutoLockNormal: '设备默认',
-  configAutoLockSpeech: '朗读时禁用',
   configAutoLockDisable: '始终禁用',
   configHelpGroupTitle: '帮助',
   configHelpTopic: '帮助',
@@ -169,8 +144,6 @@ export default {
   buttonBookmark: '书签',
   buttonSearch: '搜索',
   buttonJump: '跳转',
-  buttonSpeech: '开始朗读',
-  buttonSpeechStop: '停止朗读',
   buttonContentsRefresh: '刷新目录',
   buttonSearchSubmit: '搜索',
   buttonSearchClear: '清除搜索结果',

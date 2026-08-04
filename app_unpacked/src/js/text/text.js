@@ -65,7 +65,8 @@ const runWorker = function (url, message, onMessage, fallback) {
 };
 
 /**
- * 璇诲彇绾枃鏈紙鍚?gzip 鍘嬬缉锛? * @param {File} file
+ * 读取纯文本文件（含 gzip 压缩）。
+ * @param {File} file
  * @returns {Promise<string>}
  */
 const readTextFile = async function (file) {
@@ -120,7 +121,8 @@ const readTextFile = async function (file) {
 };
 
 /**
- * 淇濇寔鍏煎鐨勮鍙栨帴鍙ｏ細浠呰繑鍥炴枃鏈? * @param {File} file
+ * 保持兼容的读取接口：只返回文本。
+ * @param {File} file
  * @returns {Promise<string>}
  */
 text.readFile = async function (file) {
@@ -132,7 +134,8 @@ const isEpubFile = function (file) {
 };
 
 /**
- * 璇诲彇涔︾睄锛坱xt/gzip/epub锛夛紝杩斿洖鍐呭涓庢爣棰樸€佺洰褰? * @param {File} file
+ * 读取 txt、gzip 或 epub 书籍，返回内容、标题和目录。
+ * @param {File} file
  * @returns {Promise<{ title: string, content: string, index?: { template: string, items: { title: string, cursor: number }[] } }>}
  */
 text.readBook = async function (file) {
