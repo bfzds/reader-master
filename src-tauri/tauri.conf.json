@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "identifier": "io.github.tiansh.reader",
   "build": {
-    "beforeDevCommand": "node scripts/serve.cjs",
-    "beforeBuildCommand": "",
+    "beforeDevCommand": "node scripts/update-sw-version.mjs && node scripts/serve.cjs",
+    "beforeBuildCommand": "node scripts/update-sw-version.mjs",
     "devUrl": "http://127.0.0.1:2333",
     "frontendDist": "../app_unpacked/src"
   },
@@ -27,4 +27,3 @@
     ]
   }
 }
-

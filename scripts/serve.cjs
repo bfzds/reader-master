@@ -5,7 +5,10 @@ const path = require('path');
 const HOST = '127.0.0.1';
 const PORT = 2333;
 const ROOT = path.resolve(__dirname, '..', 'app_unpacked', 'src');
-const CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self'; frame-src about:; frame-ancestors 'none'; base-uri 'self'";
+const CONTENT_SECURITY_POLICY = fs.readFileSync(
+  path.resolve(__dirname, '..', 'config', 'csp-dev.txt'),
+  'utf8',
+).trim();
 const CONTENT_TYPES = {
   '.css': 'text/css; charset=UTF-8',
   '.html': 'text/html; charset=UTF-8',

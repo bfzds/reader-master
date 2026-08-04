@@ -8,13 +8,23 @@
  */
 
 import i18n from '../i18n/i18n.js';
+import {
+  CHUNK_SIZE_BYTES,
+  createChunkDescriptor,
+  getContentText,
+  isChunkDescriptor,
+  restoreChunkedContent,
+  splitText,
+  textByteLength,
+  upgradeContentSchema,
+} from './storage-chunks.js';
 
 const storage = {};
 
 export default storage;
 
 /** @type {Promise<IDBDatabase>} */
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const storageError = (message, cause = null) => {
   const error = cause instanceof Error ? cause : new Error(message);
@@ -44,6 +54,7 @@ const dbPromise = new Promise((resolve, reject) => {
     if (!db.objectStoreNames.contains('config')) db.createObjectStore('config');
     if (!db.objectStoreNames.contains('list')) db.createObjectStore('list', { keyPath: 'id', autoIncrement: true });
     if (!db.objectStoreNames.contains('source')) db.createObjectStore('source');
+    upgradeContentSchema(db);
   });
   request.addEventListener('success', () => {
     if (settled) {
@@ -117,15 +128,45 @@ const requestResult = request => {
   return request;
 };
 
+const chunkRange = id => IDBKeyRange.bound([id, 0], [id, Number.MAX_SAFE_INTEGER]);
+
+const clearContentChunks = (transaction, id) => {
+  // Updates can shrink a book, so remove every old chunk before writing the new shape.
+  const request = transaction.objectStore('contentChunks').openCursor(chunkRange(id));
+  request.addEventListener('success', () => {
+    const cursor = request.result;
+    if (!cursor) return;
+    cursor.delete();
+    cursor.continue();
+  });
+  requestResult(request);
+};
+
+const writeContent = (transaction, id, content) => {
+  clearContentChunks(transaction, id);
+  const text = getContentText(content);
+  const contentStore = transaction.objectStore('content');
+  if (textByteLength(text) <= CHUNK_SIZE_BYTES) {
+    contentStore.put(content, id);
+    return;
+  }
+  const chunks = splitText(text);
+  contentStore.put(createChunkDescriptor(content, chunks), id);
+  const chunkStore = transaction.objectStore('contentChunks');
+  chunks.forEach((chunk, chunkIndex) => {
+    chunkStore.put({ bookId: id, chunkIndex, text: chunk });
+  });
+};
+
 const files = {};
 storage.files = files;
 
 files.add = async function (meta, content, source = null) {
-  return runTransaction(['content', 'list', 'index', 'source'], 'readwrite', transaction => {
+  return runTransaction(['content', 'contentChunks', 'list', 'index', 'source'], 'readwrite', transaction => {
     const listRequest = requestResult(transaction.objectStore('list').add(meta));
     listRequest.addEventListener('success', () => {
       const id = meta.id = listRequest.result;
-      transaction.objectStore('content').add(content, id);
+      writeContent(transaction, id, content);
       transaction.objectStore('index').add({ id });
       if (source != null) transaction.objectStore('source').add(source, id);
     });
@@ -134,9 +175,10 @@ files.add = async function (meta, content, source = null) {
 };
 
 files.remove = async function (id) {
-  await runTransaction(['content', 'list', 'index', 'source'], 'readwrite', transaction => {
+  await runTransaction(['content', 'contentChunks', 'list', 'index', 'source'], 'readwrite', transaction => {
     transaction.objectStore('list').delete(id);
     transaction.objectStore('content').delete(id);
+    clearContentChunks(transaction, id);
     transaction.objectStore('index').delete(id);
     transaction.objectStore('source').delete(id);
   });
@@ -162,8 +204,36 @@ const common = function (type, actionType) {
 };
 
 files.list = common('list', 'getAll');
-files.getContent = common('content', 'get');
-files.setContent = common('content', 'put');
+files.getContent = async function (id) {
+  const content = await runTransaction(['content', 'contentChunks'], 'readonly', transaction => {
+    const holder = { value: undefined };
+    const contentRequest = requestResult(transaction.objectStore('content').get(id));
+    contentRequest.addEventListener('success', () => {
+      if (!isChunkDescriptor(contentRequest.result)) {
+        holder.value = contentRequest.result;
+        return;
+      }
+      const chunksRequest = requestResult(transaction.objectStore('contentChunks').getAll(chunkRange(id)));
+      chunksRequest.addEventListener('success', () => {
+        holder.value = restoreChunkedContent(
+          contentRequest.result,
+          chunksRequest.result.sort((a, b) => a.chunkIndex - b.chunkIndex).map(chunk => chunk.text),
+        );
+      });
+    });
+    return holder;
+  });
+  if (!isChunkDescriptor(content) && textByteLength(getContentText(content)) > CHUNK_SIZE_BYTES) {
+    // Preserve the first read of a v2 book; a failed rewrite can be retried next time.
+    queueMicrotask(() => files.setContent(id, content).catch(() => {}));
+  }
+  return content;
+};
+files.setContent = async function (content, id) {
+  await runTransaction(['content', 'contentChunks'], 'readwrite', transaction => {
+    writeContent(transaction, id, content);
+  });
+};
 files.getMeta = common('list', 'get');
 files.setMeta = common('list', 'put');
 files.getIndex = common('index', 'get');
@@ -173,8 +243,8 @@ files.setSource = common('source', 'put');
 
 /** Update all book records atomically, including optional content/source. */
 files.updateBook = async function (id, content, meta, index, source) {
-  await runTransaction(['content', 'list', 'index', 'source'], 'readwrite', transaction => {
-    transaction.objectStore('content').put(content, id);
+  await runTransaction(['content', 'contentChunks', 'list', 'index', 'source'], 'readwrite', transaction => {
+    writeContent(transaction, id, content);
     transaction.objectStore('list').put({ ...meta, id });
     transaction.objectStore('index').put({ ...index, id });
     if (source !== undefined) transaction.objectStore('source').put(source, id);

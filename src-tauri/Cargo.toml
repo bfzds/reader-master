@@ -18,6 +18,7 @@ hyper = { version = "1", features = ["http1", "server"] }
 hyper-util = { version = "0.1", features = ["server", "tokio"] }
 mime_guess = "2"
 rfd = "0.14"
+tauri-plugin-single-instance = "2.4.3"
 
 [profile.release]
 opt-level = "s"

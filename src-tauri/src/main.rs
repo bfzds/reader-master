@@ -1,13 +1,15 @@
 ﻿#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod shell;
+mod window_state;
 
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow};
+use window_state::physical_to_logical;
 
 const HOST: &str = "127.0.0.1";
 const PORT: u16 = 2333;
@@ -34,6 +36,12 @@ struct PickFolderResult {
   name: String,
 }
 
+#[derive(Clone, serde::Serialize)]
+struct SingleInstancePayload {
+  args: Vec<String>,
+  cwd: String,
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct FolderFileEntry {
   name: String,
@@ -44,11 +52,7 @@ struct FolderFileEntry {
   bytes: Option<Vec<u8>>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-struct WindowSize {
-  width: u32,
-  height: u32,
-}
+use window_state::WindowSize;
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 struct AppConfig {
@@ -424,9 +428,12 @@ fn persist_window_state(window: &WebviewWindow, app: &AppHandle) {
     });
     return;
   }
-  let size = window.inner_size().ok();
-  let width = size.map(|value| value.width).unwrap_or(DEFAULT_WINDOW_WIDTH);
-  let height = size.map(|value| value.height).unwrap_or(DEFAULT_WINDOW_HEIGHT);
+  let logical_size = window.inner_size().ok().map(|value| {
+    let scale_factor = window.scale_factor().unwrap_or(1.0);
+    physical_to_logical(value.width, value.height, scale_factor)
+  });
+  let width = logical_size.map(|value| value.width).unwrap_or(DEFAULT_WINDOW_WIDTH);
+  let height = logical_size.map(|value| value.height).unwrap_or(DEFAULT_WINDOW_HEIGHT);
   let _ = write_app_config(app, &AppConfig {
     window_size: WindowSize { width, height },
     window_maximized: false,
@@ -460,6 +467,13 @@ fn create_main_window(app: &AppHandle, config: &AppConfig) -> Result<WebviewWind
 
 fn main() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+      if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.set_focus();
+      }
+      let _ = app.emit("single-instance", SingleInstancePayload { args, cwd });
+    }))
     .manage(ImportFolderState(Mutex::new(ImportFolderRegistry::default())))
     .invoke_handler(tauri::generate_handler![
       save_config_file,
@@ -503,13 +517,33 @@ fn main() {
       };
       let handle = app.handle().clone();
       let window_for_close = window.clone();
+      let pending_resize_task = Arc::new(Mutex::new(None::<tauri::async_runtime::JoinHandle<()>>));
+      let pending_resize_task_for_event = pending_resize_task.clone();
       window.on_window_event(move |event| {
         match event {
           tauri::WindowEvent::CloseRequested { .. } => {
+            if let Ok(mut task) = pending_resize_task_for_event.lock() {
+              if let Some(task) = task.take() {
+                task.abort();
+              }
+            }
             persist_window_state(&window_for_close, &handle);
           }
           tauri::WindowEvent::Resized(_) if !window_for_close.is_maximized().unwrap_or(false) => {
-            persist_window_state(&window_for_close, &handle);
+            // Resize events arrive in bursts; cancel the prior write and persist only the final size.
+            let window_for_resize = window_for_close.clone();
+            let handle_for_resize = handle.clone();
+            let task_slot = pending_resize_task_for_event.clone();
+            if let Ok(mut task) = task_slot.lock() {
+              if let Some(task) = task.take() {
+                task.abort();
+              }
+              let next_task = tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+                persist_window_state(&window_for_resize, &handle_for_resize);
+              });
+              *task = Some(next_task);
+            };
           }
           _ => {}
         }
@@ -524,7 +558,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
   use super::{is_path_within, should_create_main_window};
-  use std::path::Path;
+  use std::path::{Path, PathBuf};
 
   #[test]
   fn existing_main_window_is_reused() {
@@ -538,8 +572,8 @@ mod tests {
 
   #[test]
   fn file_path_must_stay_inside_authorized_folder() {
-    let root = Path::new(r"C:\books");
-    assert!(is_path_within(root, Path::new(r"C:\books\novel.txt")));
-    assert!(!is_path_within(root, Path::new(r"C:\outside\novel.txt")));
+    let root = PathBuf::from("books");
+    assert!(is_path_within(&root, &root.join("novel.txt")));
+    assert!(!is_path_within(&root, Path::new("outside/novel.txt")));
   }
 }

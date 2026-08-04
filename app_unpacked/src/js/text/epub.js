@@ -259,7 +259,8 @@ const findRootFile = async function (zip) {
 };
 
 /**
- * 閻犲洩顕цぐ?epub闁挎稑鐭佺换鎴﹀炊閻愰潧鍤遍柡鍌氭处濠€浼村矗婵犲嫭绐楃憸? * @param {File} file
+ * 读取 EPUB 并转换为 tReader 的文本结构。
+ * @param {File} file
  * @param {{ loadImages?: boolean }} options
  * @returns {Promise<{ title: string, content: { text: string, resources: Record<string, { path: string, mime: string, alt: string }> }, index?: { template: string, items: { title: string, cursor: number }[] } }>}
  */
