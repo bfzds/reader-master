@@ -530,6 +530,7 @@ fn main() {
             persist_window_state(&window_for_close, &handle);
           }
           tauri::WindowEvent::Resized(_) if !window_for_close.is_maximized().unwrap_or(false) => {
+            // Resize events arrive in bursts; cancel the prior write and persist only the final size.
             let window_for_resize = window_for_close.clone();
             let handle_for_resize = handle.clone();
             let task_slot = pending_resize_task_for_event.clone();

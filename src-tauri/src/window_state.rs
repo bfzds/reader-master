@@ -14,6 +14,7 @@ pub struct WindowStateTracker {
     maximized: bool,
 }
 
+// Keep the event rules independent from Tauri so resize and close edge cases stay unit-testable.
 #[allow(dead_code)]
 impl WindowStateTracker {
     pub fn record_resize(&mut self, size: WindowSize) {

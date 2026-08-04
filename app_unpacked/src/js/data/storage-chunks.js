@@ -2,6 +2,7 @@ export const CHUNK_SIZE_BYTES = 1024 * 1024;
 
 const textEncoder = new TextEncoder();
 
+// Storage limits are byte-based; JavaScript string length counts UTF-16 units.
 export const getContentText = content => (
   typeof content === 'string' ? content : (typeof content?.text === 'string' ? content.text : '')
 );
@@ -20,6 +21,7 @@ export const splitText = function (text, maxBytes = CHUNK_SIZE_BYTES) {
   const chunks = [];
   let current = '';
   let currentBytes = 0;
+  // Iterate code points so a surrogate pair is never split between chunks.
   for (const character of text) {
     const characterBytes = textByteLength(character);
     if (characterBytes > maxBytes) throw new RangeError('maxBytes is smaller than one Unicode code point');
