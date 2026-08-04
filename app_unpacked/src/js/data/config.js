@@ -8,6 +8,9 @@
  */
 
 import storage from './storage.js';
+import { parseExpertConfig } from './config-expert.js';
+import { enqueueKeyed } from './keyed-queue.js';
+import { reportError } from './errors.js';
 
 const config = {};
 
@@ -20,24 +23,12 @@ config.EXPERT_CONFIG_NAME = EXPERT_CONFIG_NAME;
 const listenerList = [];
 let expertCacheText = null;
 let expertCache = null;
-const setQueues = new Map();
-
 const getExpertEntries = function (expert) {
   const text = typeof expert === 'string' ? expert : '';
   if (text === expertCacheText && expertCache) return expertCache;
-  const entries = new Map();
-  let prefix = '';
-  text.split('\n').forEach(line => {
-    if (/^\s*\[.*\]\s*$/.test(line)) {
-      prefix = line.trim().slice(1, -1);
-    } else if (!/^\s*[;#]/.test(line) && line.includes('=')) {
-      const name = line.split('=', 1)[0].trim();
-      entries.set(prefix ? prefix + '.' + name : name, line.slice(line.indexOf('=') + 1).trim());
-    }
-  });
   expertCacheText = text;
-  expertCache = entries;
-  return entries;
+  expertCache = parseExpertConfig(text);
+  return expertCache;
 };
 
 /** @template {ConfigType} @type {(name: string, defaultValue: ConfigType) => Promise<ConfigType>} */
@@ -45,15 +36,15 @@ config.get = async (name, defaultValue) => {
   try {
     let value = await storage.config.getItem(name);
     return value ?? defaultValue;
-  } catch (_error) {
+  } catch (error) {
+    reportError(`config.get(${name})`, error, 'warn');
     return defaultValue;
   }
 };
 
 /** @template {ConfigType} @type {(name: string, value: ConfigType) => Promise<ConfigType>} */
 config.set = async (name, value) => {
-  const previous = setQueues.get(name) || Promise.resolve();
-  const operation = previous.catch(() => {}).then(async () => {
+  return enqueueKeyed(`config:${name}`, async () => {
     await storage.config.setItem(value, name);
     if (name === EXPERT_CONFIG_NAME) {
       expertCacheText = null;
@@ -61,15 +52,10 @@ config.set = async (name, value) => {
     }
     listenerList.slice().forEach(i => {
       if (i.name !== name) return;
-      try { i.listener(value); } catch (error) { console.error(`config listener["${name}"] failed:`, error); }
+      try { i.listener(value); } catch (error) { reportError(`config listener["${name}"]`, error); }
     });
     return value;
   });
-  const queued = operation.finally(() => {
-    if (setQueues.get(name) === queued) setQueues.delete(name);
-  });
-  setQueues.set(name, queued);
-  return queued;
 };
 
 /**

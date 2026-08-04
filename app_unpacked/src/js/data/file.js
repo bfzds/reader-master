@@ -16,6 +16,7 @@ import {
   shouldResolveMigrationSource,
 } from './migration-source.js';
 import { isMigratableSettingKey } from './settings-migration.js';
+import { enqueueKeyed } from './keyed-queue.js';
 
 const duplicateBookError = '书籍已存在';
 const file = {};
@@ -62,7 +63,8 @@ file.setMeta = async function (meta, { updateLastAccessTime = true } = {}) {
   if (updateLastAccessTime) meta.lastAccessTime = new Date();
   delete meta.migrationOrder;
   delete meta.importOrder;
-  return storage.files.setMeta(meta);
+  const snapshot = { ...meta };
+  return enqueueKeyed(`book:${snapshot.id}`, () => storage.files.setMeta(snapshot));
 };
 
 file.getIndex = async function (id) {
@@ -70,7 +72,12 @@ file.getIndex = async function (id) {
 };
 
 file.setIndex = async function (index) {
-  return storage.files.setIndex(index);
+  const snapshot = {
+    ...index,
+    content: index.content && { ...index.content, items: (index.content.items || []).map(item => ({ ...item })) },
+    bookmarks: (index.bookmarks || []).map(bookmark => ({ ...bookmark })),
+  };
+  return enqueueKeyed(`book:${snapshot.id}`, () => storage.files.setIndex(snapshot));
 };
 
 file.content = async function (id) {
@@ -78,7 +85,7 @@ file.content = async function (id) {
 };
 
 file.setContent = async function (id, content) {
-  return storage.files.setContent(content, id);
+  return enqueueKeyed(`book:${id}`, () => storage.files.setContent(content, id));
 };
 
 file.source = async function (id) {
@@ -90,7 +97,7 @@ file.setSource = async function (id, source) {
 };
 
 file.updateBook = async function (id, content, meta, index, source) {
-  return storage.files.updateBook(id, content, meta, index, source);
+  return enqueueKeyed(`book:${id}`, () => storage.files.updateBook(id, content, meta, index, source));
 };
 
 file.remove = async function (id) {

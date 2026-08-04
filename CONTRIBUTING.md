@@ -15,6 +15,7 @@
 4. 修改桌面能力时，同时检查 Tauri 壳与 `app_unpacked/src/js/platform/` 抽象层。
 5. 修改 host/port、CSP、静态服务、native command、folder registry、IndexedDB 或迁移格式时，同步更新对应 `docs/`、测试和发布检查。
 6. 运行受影响的自动测试，并完成对应的人工回归。
+7. Node 测试文件必须放在 `scripts/`，并命名为 `test-*.mjs` 或 `test-*.cjs`。`npm test` 会自动发现这两类文件；不要维护手工测试清单。
 
 ## 常用验证
 
