@@ -11,6 +11,8 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 `npm.cmd test` 会按文件名串行运行 `scripts/test-*.mjs` 和 `scripts/test-*.cjs`，其中包含 `test-toc.cjs`。单独运行 `npm run test:toc` 仍可只验证 TXT 目录识别和自动分段。
 
+测试文件只能使用 `test-*.mjs` 或 `test-*.cjs` 命名，避免被自动发现规则遗漏。不要新增手工维护的测试清单。通用 Node 夹具位于 `scripts/test-fixtures.mjs` 和 `scripts/test-test-helpers.mjs`：前者提供独立 fake IndexedDB、可控 Worker、时钟、JSZip 和 Blob URL 记录器，后者提供 IndexedDB request/transaction 等待器。夹具行为由 `node --test scripts/test-test-fixtures.mjs` 覆盖。
+
 其中还包括 Service Worker 清单/hash、CSP 三处配置一致性和 IndexedDB v3 分块 schema 测试。
 
 需要定位单个测试时，可显式运行：

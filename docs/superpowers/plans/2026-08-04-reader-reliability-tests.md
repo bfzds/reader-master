@@ -53,13 +53,13 @@
 
 **目标:** 统一测试入口，提供 fake IndexedDB、可控 Worker、可控时钟和资源 URL 的测试夹具。
 
-- [ ] 统计当前测试文件和核心模块覆盖边界，避免重复造测试夹具。
-- [ ] 为 IndexedDB 测试建立独立数据库名和清理流程，保证测试之间互不污染。
-- [ ] 为 Worker 测试提供可注入的 Worker 工厂，能模拟完成、报错、无响应三种状态。
-- [ ] 为 EPUB 测试提供可控的 JSZip、`URL.createObjectURL` 和 `URL.revokeObjectURL` 替身。
-- [ ] 保留 `scripts/test-all.mjs` 的自动发现机制，并在 `CONTRIBUTING.md` 规定测试必须命名为 `test-*.mjs` 或 `test-*.cjs`；不引入需要手工维护的 `test-manifest.json`。
-- [ ] 增加元测试或脚本检查，防止测试文件因命名不符合约定而被无意跳过。
-- [ ] 运行 `npm test`，确认新夹具本身不会改变现有测试结果。
+- [x] 统计当前测试文件和核心模块覆盖边界，避免重复造测试夹具。
+- [x] 为 IndexedDB 测试建立独立数据库名和清理流程，保证测试之间互不污染。
+- [x] 为 Worker 测试提供可注入的 Worker 工厂，能模拟完成、报错、无响应三种状态。
+- [x] 为 EPUB 测试提供可控的 JSZip、`URL.createObjectURL` 和 `URL.revokeObjectURL` 替身。
+- [x] 保留 `scripts/test-all.mjs` 的自动发现机制，并在 `CONTRIBUTING.md` 规定测试必须命名为 `test-*.mjs` 或 `test-*.cjs`；不引入需要手工维护的 `test-manifest.json`。
+- [x] 增加元测试或脚本检查，防止测试文件因命名不符合约定而被无意跳过。
+- [x] 运行 `npm test`，确认新夹具本身不会改变现有测试结果。
 
 验收标准：现有 Node 测试全部通过；后续测试可以在不启动 Tauri 和浏览器的情况下运行。
 
