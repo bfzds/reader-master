@@ -77,12 +77,12 @@
 
 **影响范围:** `storage.js` 的 `runTransaction()` 被所有 IndexedDB 读写入口使用；`writeContent()` 同时影响导入、编辑保存、迁移恢复和大文本分块。任何事务语义变化都必须回归 `file.js`、`storage-chunks.js` 和迁移测试。
 
-- [ ] 先写测试：request 成功后事务 abort 时，调用方必须 reject。
-- [ ] 先写测试：`transaction.onerror` 和 `transaction.onabort` 都能返回可识别的 Error。
-- [ ] 先写测试：事务 action 同步抛错时会终止事务并 reject。
-- [ ] 先写测试：大文本更新失败时，旧内容仍可读；不要先假定必须重写存储算法。
-- [ ] 如果 fake IndexedDB 证明当前同一事务具备原子回滚，保留现有写入结构并补注释；只有测试证明存在跨事务风险时才引入版本化写入。
-- [ ] 对 `writeContent` 的小文本、大文本、空内容和旧 chunk 清理分别添加测试。
+- [x] 先写测试：request 成功后事务 abort 时，调用方必须 reject。
+- [x] 先写测试：`transaction.onerror` 和 `transaction.onabort` 都能返回可识别的 Error。
+- [x] 先写测试：事务 action 同步抛错时会终止事务并 reject。
+- [x] 先写测试：大文本更新失败时，旧内容仍可读；不要先假定必须重写存储算法。
+- [x] 如果 fake IndexedDB 证明当前同一事务具备原子回滚，保留现有写入结构并补注释；只有测试证明存在跨事务风险时才引入版本化写入。
+- [x] 对 `writeContent` 的小文本、大文本、空内容和旧 chunk 清理分别添加测试。
 
 验收标准：所有事务失败测试稳定复现；中途失败不会返回假成功，也不会留下可观察的半成品数据。
 

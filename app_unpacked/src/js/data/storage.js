@@ -90,8 +90,7 @@ const transactionFailure = transaction => transaction.error || new Error('Indexe
  * Run a transaction and settle only after commit. Requests can succeed before
  * the transaction later aborts, so callers must never resolve on request success.
  */
-const runTransaction = async function (stores, mode, action) {
-  const db = await getDatabase();
+export const runTransactionWithDatabase = function (db, stores, mode, action) {
   return new Promise((resolve, reject) => {
     let transaction;
     try {
@@ -121,6 +120,10 @@ const runTransaction = async function (stores, mode, action) {
       rejectTransaction(error);
     }
   });
+};
+
+const runTransaction = async function (stores, mode, action) {
+  return runTransactionWithDatabase(await getDatabase(), stores, mode, action);
 };
 
 const requestResult = request => {
