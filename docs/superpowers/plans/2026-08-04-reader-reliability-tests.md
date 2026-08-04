@@ -144,13 +144,13 @@
 
 **影响范围:** `createEpubResourceLoader()` 被阅读页的资源租约管理调用；Blob URL 生命周期与 TextPage 的图片渲染、阅读页切书和 EPUB 编辑后的资源失效直接相关。
 
-- [ ] 先写测试：同一路径的并发 acquire 共享同一个 pending Promise。
-- [ ] 先写测试：acquire 成功后 release 只减少引用计数，不能提前 revoke 仍被使用的 URL。
-- [ ] 先写测试：重复 release 不会重复减少引用计数。
-- [ ] 先写测试：资源不存在或读取失败时 entry 会从 Map 删除，后续 acquire 可以重新尝试。
-- [ ] 先写测试：超过 `maxIdleEntries` 时只淘汰无引用、无 pending 的 entry。
-- [ ] 先写测试：destroy 会阻止新 acquire，并释放所有可释放的 Blob URL。
-- [ ] 如果测试发现失败资源反复请求成本过高，再增加短期失败缓存；不要在没有行为需求时永久缓存失败。
+- [x] 先写测试：同一路径的并发 acquire 共享同一个 pending Promise。
+- [x] 先写测试：acquire 成功后 release 只减少引用计数，不能提前 revoke 仍被使用的 URL。
+- [x] 先写测试：重复 release 不会重复减少引用计数。
+- [x] 先写测试：资源不存在或读取失败时 entry 会从 Map 删除，后续 acquire 可以重新尝试。
+- [x] 先写测试：超过 `maxIdleEntries` 时只淘汰无引用、无 pending 的 entry。
+- [x] 先写测试：destroy 会阻止新 acquire，并释放所有可释放的 Blob URL。
+- [x] 如果测试发现失败资源反复请求成本过高，再增加短期失败缓存；不要在没有行为需求时永久缓存失败。
 
 验收标准：每个 Blob URL 的创建和 revoke 都有对应断言；资源失败不会污染缓存状态。
 

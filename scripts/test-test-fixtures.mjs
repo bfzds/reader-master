@@ -72,7 +72,7 @@ test('zip factory supplies files with controllable async payloads', async () => 
   const JSZip = createZipFactory({
     'chapter.xhtml': '<p>chapter</p>',
   });
-  const zip = await new JSZip().loadAsync(new Uint8Array([1]));
+  const zip = await JSZip.loadAsync(new Uint8Array([1]));
 
   assert.equal(await zip.file('chapter.xhtml').async('text'), '<p>chapter</p>');
   assert.equal(zip.file('missing.xhtml'), null);

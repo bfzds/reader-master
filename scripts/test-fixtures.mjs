@@ -100,6 +100,9 @@ export const createResourceUrlTracker = function () {
 
 export const createZipFactory = function (files) {
   return class JSZip {
+    static async loadAsync() {
+      return new JSZip();
+    }
     async loadAsync() {
       return this;
     }
