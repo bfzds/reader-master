@@ -1,0 +1,15 @@
+{
+  "name": "treader-shell-workspace",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/test-all.mjs",
+    "test:toc": "node scripts/test-toc.cjs",
+    "test:performance": "node --test scripts/test-performance-regressions.mjs",
+    "test:drag-import": "node --test scripts/test-file-drop.mjs",
+    "tauri:dev": "tauri dev --config src-tauri/tauri.conf.json",
+    "tauri:build": "tauri build --config src-tauri/tauri.conf.json"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

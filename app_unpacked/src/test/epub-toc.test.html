@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>EPUB directory regression test</title>
+</head>
+<body>
+  <pre id="result">运行中...</pre>
+  <script type="module">
+    import { readEpub } from '../js/text/epub.js';
+
+    const result = document.querySelector('#result');
+    const assert = function (condition, message) {
+      if (!condition) throw new Error(message);
+    };
+
+    const createZip = function (files) {
+      return {
+        file(path) {
+          const content = files[path];
+          if (content == null) return null;
+          return { async: async () => content };
+        },
+      };
+    };
+
+    const readFixture = async function (name, files) {
+      window.JSZip = { loadAsync: async () => createZip(files) };
+      return readEpub({ name, arrayBuffer: async () => new ArrayBuffer(0) });
+    };
+
+    const epub2Files = {
+      'META-INF/container.xml': `<?xml version="1.0"?>
+<container><rootfiles><rootfile full-path="book.opf"/></rootfiles></container>`,
+      'book.opf': `<?xml version="1.0"?>
+<package version="2.0"><metadata><title>EPUB 2 测试书</title></metadata><manifest>
+  <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+  <item id="contents" href="OEBPS/table-of-contents.html" media-type="application/xhtml+xml"/>
+  <item id="chapter-1" href="OEBPS/page-1.html" media-type="application/xhtml+xml"/>
+  <item id="chapter-2" href="OEBPS/page-2.html" media-type="application/xhtml+xml"/>
+</manifest><spine toc="ncx"><itemref idref="contents"/><itemref idref="chapter-1"/><itemref idref="chapter-2"/></spine>
+<guide><reference type="toc" href="OEBPS/table-of-contents.html"/></guide></package>`,
+      'toc.ncx': `<?xml version="1.0"?>
+<ncx><navMap>
+  <navPoint id="chapter-1"><navLabel><text>第1章 起点</text></navLabel><content src="OEBPS/page-1.html"/></navPoint>
+  <navPoint id="chapter-2"><navLabel><text>第2章 继续</text></navLabel><content src="OEBPS/page-2.html"/></navPoint>
+</navMap></ncx>`,
+      'OEBPS/table-of-contents.html': '<html><body><h1>目录页章节</h1><p>第1章 起点</p><p>第2章 继续</p></body></html>',
+      'OEBPS/page-1.html': '<html><body><h1>第1章 起点</h1><p>第一章正文。</p></body></html>',
+      'OEBPS/page-2.html': '<html><body><h1>第2章 继续</h1><p>第二章正文。</p></body></html>',
+    };
+
+    const epub3Files = {
+      'META-INF/container.xml': `<?xml version="1.0"?>
+<container><rootfiles><rootfile full-path="OEBPS/book.opf"/></rootfiles></container>`,
+      'OEBPS/book.opf': `<?xml version="1.0"?>
+<package version="3.0"><metadata><title>EPUB 3 测试书</title></metadata><manifest>
+  <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+  <item id="chapter-1" href="page-1.xhtml" media-type="application/xhtml+xml"/>
+</manifest><spine><itemref idref="chapter-1"/></spine></package>`,
+      'OEBPS/nav.xhtml': '<html><body><nav epub:type="toc"><ol><li><a href="page-1.xhtml">EPUB 3 第一章</a></li></ol></nav></body></html>',
+      'OEBPS/page-1.xhtml': '<html><body><h1>EPUB 3 第一章</h1><p>正文。</p></body></html>',
+    };
+
+    try {
+      const epub2 = await readFixture('epub2.epub', epub2Files);
+      assert(epub2.index?.items?.length === 2, 'EPUB 2 应保留 NCX 中的两个目录项');
+      assert(epub2.index.items.map(item => item.title).join('|') === '第1章 起点|第2章 继续', 'EPUB 2 目录标题不正确');
+      assert(!epub2.content.text.includes('目录页章节'), 'EPUB 2 的目录页不应进入正文');
+
+      const epub3 = await readFixture('epub3.epub', epub3Files);
+      assert(epub3.index?.items?.length === 1, 'EPUB 3 导航目录不应回归');
+      assert(epub3.index.items[0].title === 'EPUB 3 第一章', 'EPUB 3 目录标题不正确');
+
+      result.textContent = 'PASS\nEPUB 2 NCX 目录、目录页排除、EPUB 3 导航均正常。';
+    } catch (error) {
+      result.textContent = `FAIL\n${error.message}`;
+    }
+  </script>
+</body>
+</html>

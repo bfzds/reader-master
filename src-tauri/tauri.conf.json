@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "tReader",
+  "version": "1.0.0",
+  "identifier": "io.github.tiansh.reader",
+  "build": {
+    "beforeDevCommand": "node scripts/serve.cjs",
+    "beforeBuildCommand": "",
+    "devUrl": "http://127.0.0.1:2333",
+    "frontendDist": "../app_unpacked/src"
+  },
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' http://ipc.localhost; frame-src about:; frame-ancestors 'none'; base-uri 'self'"
+    },
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "active": true,
+    "resources": {
+      "../app_unpacked/src/": "treader-frontend/"
+    },
+    "targets": ["nsis"],
+    "icon": [
+      "../app_unpacked/src/icon/icon.ico",
+      "../app_unpacked/src/icon/icon.png"
+    ]
+  }
+}
+
