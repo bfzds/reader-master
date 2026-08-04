@@ -111,11 +111,6 @@
   display: block;
 }
 
-.read-control .icon-speech-stop { display: none; }
-.read-speech .read-control .icon-speech-stop { display: inline; }
-.read-control .icon-speech { display: inline; }
-.read-speech .read-control .icon-speech { display: none; }
-
 .read-control-disabled {
   display: none;
 }
@@ -457,10 +452,6 @@ button.contents-history-clear {
 
 .read-highlight {
   display: none;
-}
-
-.read-speech .read-highlight {
-  display: block;
 }
 
 .read-highlight span {

@@ -16,6 +16,7 @@ import {
   shouldResolveMigrationSource,
 } from './migration-source.js';
 import { isMigratableSettingKey } from './settings-migration.js';
+import { enqueueKeyed } from './keyed-queue.js';
 
 const duplicateBookError = '书籍已存在';
 const file = {};
@@ -90,7 +91,7 @@ file.setSource = async function (id, source) {
 };
 
 file.updateBook = async function (id, content, meta, index, source) {
-  return storage.files.updateBook(id, content, meta, index, source);
+  return enqueueKeyed(`book:${id}`, () => storage.files.updateBook(id, content, meta, index, source));
 };
 
 file.remove = async function (id) {

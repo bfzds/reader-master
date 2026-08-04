@@ -83,14 +83,6 @@
   vertical-align: -2px;
 }
 
-.icon-speech::before {
-  content: "\e909";
-}
-
-.icon-speech-stop::before {
-  content: "\e90a";
-}
-
 .icon-refresh::before {
   content: "\e90b";
 }
@@ -124,5 +116,4 @@
 .icon-more::before {
   content: "\e90e";
 }
-
 
