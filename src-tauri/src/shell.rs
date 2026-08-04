@@ -11,7 +11,7 @@ use std::path::{Component, Path, PathBuf};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::task::JoinHandle;
 
-const CONTENT_SECURITY_POLICY: &str = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' http://ipc.localhost; frame-src about:; frame-ancestors 'none'; base-uri 'self'";
+const CONTENT_SECURITY_POLICY: &str = include_str!("../../config/csp-prod.txt");
 
 pub struct StaticServerHandle {
   _task: JoinHandle<()>,

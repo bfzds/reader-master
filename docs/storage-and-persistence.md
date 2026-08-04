@@ -2,17 +2,20 @@
 
 ## 1. IndexedDB
 
-renderer 使用数据库 `reader`，当前版本为 `2`：
+renderer 使用数据库 `reader`，当前版本为 `3`：
 
 | Store | Key | 内容 |
 | --- | --- | --- |
 | `list` | `id`，自增 | 书籍元数据、阅读位置、来源名称、`sourceFolderId` 等。 |
 | `content` | 书籍 id | 正文，或正文与 EPUB 资源。 |
+| `contentChunks` | `[bookId, chunkIndex]` | 超过 1 MiB UTF-8 正文的文本分块。 |
 | `index` | `id` | 目录、书签和阅读索引。 |
 | `config` | 配置名 | 应用配置。 |
 | `source` | 书籍 id | 原始 `File` 或 `Blob`。 |
 
 页面不应直接操作 IndexedDB；通过 `app_unpacked/src/js/data/storage.js`、`config.js` 和 `file.js` 访问。
+
+正文按 UTF-8 字节数判断大小。小于或等于 `1 MiB` 的正文继续写入 `content`；更大的正文在 `content` 中保存分块描述和资源元数据，在 `contentChunks` 中保存文本块。读取旧 v2 正文时先返回兼容结构，再通过一次惰性重写迁移到分块格式；迁移失败不影响当前阅读，下一次读取仍可重试。
 
 `storage.js` 的 transaction 只有在 `complete` 后才算成功；request 成功后若 transaction 随后 abort，调用方仍会收到失败。open error、blocked、versionchange、transaction error/abort 都必须进入可观察的失败路径。`versionchange` 和窗口卸载时会关闭数据库连接。
 
