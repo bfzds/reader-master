@@ -558,7 +558,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
   use super::{is_path_within, should_create_main_window};
-  use std::path::Path;
+  use std::path::{Path, PathBuf};
 
   #[test]
   fn existing_main_window_is_reused() {
@@ -572,8 +572,8 @@ mod tests {
 
   #[test]
   fn file_path_must_stay_inside_authorized_folder() {
-    let root = Path::new(r"C:\books");
-    assert!(is_path_within(root, Path::new(r"C:\books\novel.txt")));
-    assert!(!is_path_within(root, Path::new(r"C:\outside\novel.txt")));
+    let root = PathBuf::from("books");
+    assert!(is_path_within(&root, &root.join("novel.txt")));
+    assert!(!is_path_within(&root, Path::new("outside/novel.txt")));
   }
 }
