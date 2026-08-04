@@ -5,8 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const entries = await readdir(scriptDirectory, { withFileTypes: true });
+const supportModules = new Set(['test-fixtures.mjs', 'test-test-helpers.mjs']);
 const testFiles = entries
-  .filter(entry => entry.isFile() && entry.name !== 'test-all.mjs' && /^test-.*\.(?:mjs|cjs)$/.test(entry.name))
+  .filter(entry => entry.isFile()
+    && entry.name !== 'test-all.mjs'
+    && !supportModules.has(entry.name)
+    && /^test-.*\.(?:mjs|cjs)$/.test(entry.name))
   .map(entry => entry.name)
   .sort();
 
