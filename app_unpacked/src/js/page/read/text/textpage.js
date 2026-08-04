@@ -10,6 +10,7 @@
 import ReadPage from '../readpage.js';
 import config from '../../../data/config.js';
 import dom from '../../../ui/util/dom.js';
+import { setViewHidden } from '../../../ui/util/view.js';
 import onResize from '../../../ui/util/onresize.js';
 import { imagePlaceholderRegExp } from '../../../text/epub.js';
 
@@ -73,17 +74,15 @@ export default class TextPage {
   show() {
     const container = this.container;
     if (container) {
-      container.classList.remove('read-text-hidden');
-      container.removeAttribute('aria-hidden');
+      setViewHidden(container, false, 'read-text-hidden');
       dom.enableKeyboardFocus(container);
     }
   }
   hide() {
     const container = this.container;
     if (container) {
-      container.classList.add('read-text-hidden');
-      container.setAttribute('aria-hidden', 'true');
-      dom.enableKeyboardFocus(container);
+      setViewHidden(container, true, 'read-text-hidden');
+      dom.disableKeyboardFocus(container);
     }
   }
   isInPage(cursor) {

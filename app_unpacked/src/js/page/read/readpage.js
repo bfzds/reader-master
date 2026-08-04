@@ -357,15 +357,16 @@ export default class ReadPage extends Page {
     this.meta.cursor = cursor;
     this.pendingMetaSave = { ...this.meta };
     clearTimeout(this.metaSaveTimer);
-    this.metaSaveTimer = setTimeout(this.flushMetaSave, 350);
+    this.metaSaveTimer = setTimeout(() => {
+      this.flushMetaSave().catch(error => console.warn('Reading metadata save failed:', error));
+    }, 350);
     this.textPage.cursorChange(cursor, config);
     this.subPages.forEach(page => page.cursorChange(cursor, config));
   }
   queueMetaSave(meta) {
-    this.metaSaveQueue = this.metaSaveQueue.then(() => file.setMeta(meta)).catch(error => {
-      console.warn('Reading metadata save failed:', error);
-    });
-    return this.metaSaveQueue;
+    const save = this.metaSaveQueue.catch(() => {}).then(() => file.setMeta(meta));
+    this.metaSaveQueue = save;
+    return save;
   }
   async flushMetaSave() {
     clearTimeout(this.metaSaveTimer);

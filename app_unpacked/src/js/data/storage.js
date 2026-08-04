@@ -18,6 +18,7 @@ import {
   textByteLength,
   upgradeContentSchema,
 } from './storage-chunks.js';
+import { reportError } from './errors.js';
 
 const storage = {};
 
@@ -89,8 +90,7 @@ const transactionFailure = transaction => transaction.error || new Error('Indexe
  * Run a transaction and settle only after commit. Requests can succeed before
  * the transaction later aborts, so callers must never resolve on request success.
  */
-const runTransaction = async function (stores, mode, action) {
-  const db = await getDatabase();
+export const runTransactionWithDatabase = function (db, stores, mode, action) {
   return new Promise((resolve, reject) => {
     let transaction;
     try {
@@ -120,6 +120,10 @@ const runTransaction = async function (stores, mode, action) {
       rejectTransaction(error);
     }
   });
+};
+
+const runTransaction = async function (stores, mode, action) {
+  return runTransactionWithDatabase(await getDatabase(), stores, mode, action);
 };
 
 const requestResult = request => {
@@ -184,7 +188,7 @@ files.remove = async function (id) {
   });
 };
 
-const common = function (type, actionType) {
+const createStoreOperation = function (type, actionType) {
   const action = {
     get: (store, id) => store.get(id),
     put: (store, ...param) => store.put(...param),
@@ -203,7 +207,7 @@ const common = function (type, actionType) {
   };
 };
 
-files.list = common('list', 'getAll');
+files.list = createStoreOperation('list', 'getAll');
 files.getContent = async function (id) {
   const content = await runTransaction(['content', 'contentChunks'], 'readonly', transaction => {
     const holder = { value: undefined };
@@ -225,7 +229,9 @@ files.getContent = async function (id) {
   });
   if (!isChunkDescriptor(content) && textByteLength(getContentText(content)) > CHUNK_SIZE_BYTES) {
     // Preserve the first read of a v2 book; a failed rewrite can be retried next time.
-    queueMicrotask(() => files.setContent(id, content).catch(() => {}));
+    queueMicrotask(() => files.setContent(id, content).catch(error => {
+      reportError(`content migration(${id})`, error, 'warn');
+    }));
   }
   return content;
 };
@@ -234,12 +240,12 @@ files.setContent = async function (content, id) {
     writeContent(transaction, id, content);
   });
 };
-files.getMeta = common('list', 'get');
-files.setMeta = common('list', 'put');
-files.getIndex = common('index', 'get');
-files.setIndex = common('index', 'put');
-files.getSource = common('source', 'get');
-files.setSource = common('source', 'put');
+files.getMeta = createStoreOperation('list', 'get');
+files.setMeta = createStoreOperation('list', 'put');
+files.getIndex = createStoreOperation('index', 'get');
+files.setIndex = createStoreOperation('index', 'put');
+files.getSource = createStoreOperation('source', 'get');
+files.setSource = createStoreOperation('source', 'put');
 
 /** Update all book records atomically, including optional content/source. */
 files.updateBook = async function (id, content, meta, index, source) {
@@ -260,8 +266,8 @@ files.updateState = async function (id, meta, index) {
 
 const config = {};
 storage.config = config;
-config.getItem = common('config', 'get');
-config.setItem = common('config', 'put');
+config.getItem = createStoreOperation('config', 'get');
+config.setItem = createStoreOperation('config', 'put');
 config.getAllEntries = async function () {
   return runTransaction(['config'], 'readonly', transaction => {
     const store = transaction.objectStore('config');
