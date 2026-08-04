@@ -1,0 +1,8 @@
+# Third-Party Notices
+
+This distribution contains third-party components.
+
+- Electron license text: `licenses/LICENSE.electron.txt`
+- Chromium and bundled third-party license notices: `licenses/LICENSES.chromium.html`
+
+The tReader source files that carry MPL-2.0 headers remain subject to the Mozilla Public License, version 2.0.

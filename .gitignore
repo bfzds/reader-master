@@ -1,0 +1,21 @@
+# Node and frontend build output
+/node_modules/
+/app_unpacked/node_modules/
+/app_unpacked/dist/
+
+# Rust build output
+/src-tauri/target/
+/src-tauri/target-*/
+
+# Local extracted references and packaged runtime artifacts
+/asar_extracted/
+/artifacts/
+
+# Local diagnostics
+/*.log
+/*.err.log
+/*.out.log
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db

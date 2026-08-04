@@ -1,0 +1,21 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Allow the main tReader window to use the application commands.",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://127.0.0.1:2333/**"]
+  },
+  "permissions": [
+    "core:default",
+    "allow-save-config-file",
+    "allow-read-dropped-file",
+    "allow-pick-import-folder",
+    "allow-get-import-folder-selection",
+    "allow-save-file-to-folder",
+    "allow-list-import-folder-books",
+    "allow-read-file-in-folder",
+    "allow-delete-file-in-folder",
+    "allow-set-window-size"
+  ]
+}

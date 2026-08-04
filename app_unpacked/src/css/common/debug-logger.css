@@ -1,0 +1,111 @@
+#debug-logger {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: min(520px, 70vw);
+  max-height: min(60vh, 460px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(20, 20, 20, 0.96);
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 2147483647;
+  font: 12px/1.45 Consolas, 'Courier New', monospace;
+  pointer-events: none;
+}
+
+#debug-logger .debug-logger-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#debug-logger.debug-logger-dragging .debug-logger-toolbar {
+  cursor: grabbing;
+}
+
+#debug-logger .debug-logger-toolbar strong {
+  flex: 1;
+  font: inherit;
+  font-weight: 700;
+}
+
+#debug-logger .debug-logger-toolbar button {
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+#debug-logger .debug-logger-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+#debug-logger .debug-logger-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#debug-logger .debug-logger-list {
+  max-height: 410px;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+#debug-logger .debug-logger-entry {
+  display: flex;
+  gap: 8px;
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#debug-logger .debug-logger-entry-meta {
+  flex: 0 0 105px;
+  color: #aeb4bd;
+}
+
+#debug-logger .debug-logger-entry-message {
+  flex: 1 1 auto;
+}
+
+#debug-logger .debug-logger-info {
+  color: #8ecae6;
+}
+
+#debug-logger .debug-logger-debug {
+  color: #bdb2ff;
+}
+
+#debug-logger .debug-logger-warn {
+  color: #feca57;
+}
+
+#debug-logger .debug-logger-error {
+  color: #ff6b6b;
+}
+
+@media (max-width: 600px) {
+  #debug-logger {
+    top: 5px;
+    right: 5px;
+    width: calc(100vw - 10px);
+  }
+}
