@@ -10,6 +10,7 @@
 import config from '../data/config.js';
 import file from '../data/file.js';
 import { createEpub, readEpub } from './epub.js';
+import { runWorker } from './worker-runner.js';
 
 const text = {};
 
@@ -19,50 +20,8 @@ export default text;
 let compressConfigPromise = null;
 const defaultEncodingList = ['utf-8', 'gbk', 'big5', 'utf-16le', 'utf-16be', 'utf-8'];
 const convertTablePromiseMap = new Map();
-const WORKER_TIMEOUT = 10000;
 
 const extractTextContent = content => typeof content === 'string' ? content : content?.text;
-
-const runWorker = function (url, message, onMessage, fallback) {
-  return new Promise(resolve => {
-    let worker = null;
-    let settled = false;
-    let timeoutId = null;
-    const settle = value => {
-      if (settled) return;
-      settled = true;
-      if (timeoutId != null) clearTimeout(timeoutId);
-      try {
-        worker?.terminate();
-      } catch (_ignore) {
-        // ignore
-      }
-      resolve(value);
-    };
-    if (typeof Worker !== 'function') {
-      settle(fallback);
-      return;
-    }
-    try {
-      worker = new Worker(url);
-      const handleMessage = event => {
-        try {
-          settle(onMessage(event.data));
-        } catch (_ignore) {
-          settle(fallback);
-        }
-      };
-      const handleError = () => settle(fallback);
-      worker.addEventListener('message', handleMessage);
-      worker.addEventListener('error', handleError);
-      worker.addEventListener('messageerror', handleError);
-      timeoutId = setTimeout(() => settle(fallback), WORKER_TIMEOUT);
-      worker.postMessage(message);
-    } catch (_ignore) {
-      settle(fallback);
-    }
-  });
-};
 
 /**
  * 读取纯文本文件（含 gzip 压缩）。
@@ -210,7 +169,7 @@ text.useWildcardForContent = function (template) {
     if (c === '*') return '.*';
     if (c === '?') return '.';
     return c.replace(/[-[\]{}()*+?.,\\^$|#\s]/g,
-      c => `\\u${c.charCodeAt().toString(16).padStart(4, 0)}`);
+      c => `\\u${c.charCodeAt().toString(16).padStart(4, '0')}`);
   });
   return new RegExp(`^\\s*(?:${escape})`, 'u');
 };
@@ -289,7 +248,13 @@ const chineseConvert = async function (text, setting) {
     return convertSync(text, table);
   }
 
-  return runWorker('./worker/convert.js', { text, table }, data => data?.result ?? text, text);
+  const data = await runWorker({
+    url: './worker/convert.js',
+    message: { text, table },
+    fallback: text,
+    onFallback: error => console.warn('Chinese conversion worker fallback:', error),
+  });
+  return data?.result ?? text;
 };
 
 const convertSync = function (text, table) {
@@ -339,12 +304,16 @@ text.preprocess = async function (text, options = null) {
 };
 
 text.guessContent = async function (content, { id, title }) {
-  if (typeof Worker !== 'function') return;
   const textContent = extractTextContent(content);
   if (!textContent) return;
   const enabledAutoToc = await config.get('auto_toc', 'enable');
   if (enabledAutoToc !== 'enable') return;
-  return runWorker('./worker/toc.js', textContent, content => {
+  return runWorker({
+    url: './worker/toc.js',
+    message: textContent,
+    fallback: undefined,
+    onFallback: error => console.warn('Automatic TOC worker fallback:', error),
+  }).then(content => {
     if (content?.items && Array.isArray(content.items)) {
       content.items.unshift({ title, cursor: 0 });
       Promise.resolve(file.getIndex(id)).then(currentIndex => file.setIndex({
@@ -356,5 +325,5 @@ text.guessContent = async function (content, { id, title }) {
       });
     }
     return undefined;
-  }, undefined);
+  });
 };

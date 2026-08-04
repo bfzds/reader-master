@@ -122,13 +122,13 @@
 
 **影响范围:** 执行前确认 `runWorker()` 的所有调用点。当前至少包含中文转换和目录识别，两者的 fallback 不同：中文转换返回原文，目录识别不生成目录；runner 必须保留调用方自定义 fallback 的能力。
 
-- [ ] 先写测试：Worker 返回结果时 resolve 正确值并 terminate。
-- [ ] 先写测试：Worker 抛错时返回 fallback 并 terminate。
-- [ ] 先写测试：Worker 不存在时立即返回 fallback。
-- [ ] 先写测试：10 秒超时后返回 fallback、清理 timer 并 terminate。
-- [ ] 先写测试：超时后迟到的 message/error 不会再次改变结果。
-- [ ] 将 `WORKER_TIMEOUT` 作为明确配置或参数暴露给测试，不改变生产默认值 10000ms。
-- [ ] 让 `text.js` 只负责传入 URL、消息和 fallback。
+- [x] 先写测试：Worker 返回结果时 resolve 正确值并 terminate。
+- [x] 先写测试：Worker 抛错时返回 fallback 并 terminate。
+- [x] 先写测试：Worker 不存在时立即返回 fallback。
+- [x] 先写测试：10 秒超时后返回 fallback、清理 timer 并 terminate。
+- [x] 先写测试：超时后迟到的 message/error 不会再次改变结果。
+- [x] 将 `WORKER_TIMEOUT` 作为明确配置或参数暴露给测试，不改变生产默认值 10000ms。
+- [x] 让 `text.js` 只负责传入 URL、消息和 fallback。
 
 验收标准：超时路径有自动化证据，Worker 不会因迟到消息造成重复 resolve、资源泄漏或未结束状态。
 
