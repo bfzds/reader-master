@@ -530,6 +530,7 @@ fn main() {
             persist_window_state(&window_for_close, &handle);
           }
           tauri::WindowEvent::Resized(_) if !window_for_close.is_maximized().unwrap_or(false) => {
+            // Resize events arrive in bursts; cancel the prior write and persist only the final size.
             let window_for_resize = window_for_close.clone();
             let handle_for_resize = handle.clone();
             let task_slot = pending_resize_task_for_event.clone();
@@ -557,7 +558,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
   use super::{is_path_within, should_create_main_window};
-  use std::path::Path;
+  use std::path::{Path, PathBuf};
 
   #[test]
   fn existing_main_window_is_reused() {
@@ -571,8 +572,8 @@ mod tests {
 
   #[test]
   fn file_path_must_stay_inside_authorized_folder() {
-    let root = Path::new(r"C:\books");
-    assert!(is_path_within(root, Path::new(r"C:\books\novel.txt")));
-    assert!(!is_path_within(root, Path::new(r"C:\outside\novel.txt")));
+    let root = PathBuf::from("books");
+    assert!(is_path_within(&root, &root.join("novel.txt")));
+    assert!(!is_path_within(&root, Path::new("outside/novel.txt")));
   }
 }

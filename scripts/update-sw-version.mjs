@@ -14,6 +14,7 @@ const parseServiceWorker = source => {
 };
 
 const hashResources = resources => createHash('sha256')
+  // Keep the hash independent of sw.js itself and of the current date.
   .update(JSON.stringify([...resources].sort()))
   .digest('hex')
   .slice(0, 12);
