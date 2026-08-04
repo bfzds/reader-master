@@ -53,7 +53,7 @@ export default class RangeInput {
       let pos = null;
       const config = this.config;
       if (ratio === 1) pos = config.max;
-      if (ratio === 0) pos = config.min;
+      else if (ratio === 0) pos = config.min;
       else {
         pos = Math.min(config.max, Math.max(config.min,
           Math.round((config.max - config.min) * ratio / config.step) * config.step + config.min
