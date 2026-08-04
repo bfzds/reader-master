@@ -135,6 +135,7 @@ const requestResult = request => {
 const chunkRange = id => IDBKeyRange.bound([id, 0], [id, Number.MAX_SAFE_INTEGER]);
 
 const clearContentChunks = (transaction, id) => {
+  // Updates can shrink a book, so remove every old chunk before writing the new shape.
   const request = transaction.objectStore('contentChunks').openCursor(chunkRange(id));
   request.addEventListener('success', () => {
     const cursor = request.result;
@@ -227,6 +228,7 @@ files.getContent = async function (id) {
     return holder;
   });
   if (!isChunkDescriptor(content) && textByteLength(getContentText(content)) > CHUNK_SIZE_BYTES) {
+    // Preserve the first read of a v2 book; a failed rewrite can be retried next time.
     queueMicrotask(() => files.setContent(id, content).catch(error => {
       reportError(`content migration(${id})`, error, 'warn');
     }));
