@@ -7,7 +7,7 @@
  * defined by the Mozilla Public License, v. 2.0.
  */
 
-const version = /* VERSION */"20260701-chinese-convert-worker"/* VERSION */; // eslint-disable-line-line quotes
+const version = /* VERSION */"20260804-860d52a9ac74"/* VERSION */; // eslint-disable-line-line quotes
 
 const resourceList = [
   './help/about.html',
@@ -36,6 +36,10 @@ const resourceList = [
   './js/data/file.js',
   './js/data/options.js',
   './js/data/storage.js',
+  './js/data/migration-conflict.js',
+  './js/data/migration-export.js',
+  './js/data/migration-source.js',
+  './js/data/settings-migration.js',
   './js/i18n/i18n.js',
   './js/i18n/locale/en.js',
   './js/i18n/locale/zh_cn.js',
@@ -49,6 +53,10 @@ const resourceList = [
   './js/ui/util/template.js',
   './js/ui/util/touch.js',
   './js/ui/util/wakelock.js',
+  './js/ui/util/debug-logger.js',
+  './js/ui/util/debug-logger-core.js',
+  './js/platform/import-folder.js',
+  './js/platform/runtime.js',
   './js/text/text.js',
   './js/text/epub.js',
   './js/theme/theme.js',
@@ -102,7 +110,7 @@ self.addEventListener('install', function (event) {
 self.addEventListener('fetch', function (event) {
   const url = new URL(event.request.url);
   if (event.request.method === 'GET') {
-    // 澶勭悊涓嶅瓨鍦ㄧ殑epub鐩稿叧鏂囦欢锛岄伩鍏?04閿欒
+    // 处理不存在的 EPUB 相关文件，避免旧版本引用产生 404。
     const pathname = url.pathname;
     if (pathname.includes('epub.min.js') || pathname.includes('epubtextpage.js')) {
       // 杩斿洖绌哄搷搴旓紝閬垮厤404閿欒

@@ -119,34 +119,9 @@ export default {
   configAutoTocDetect: '自動目錄分析',
   configAutoTocDetectDisable: '停用',
   configAutoTocDetectEnable: '啟用',
-  configSpeechGroupTitle: '朗讀',
-  configSpeechVoice: '語音',
-  configSpeechVoiceRemote: '(遠端)',
-  configSpeechVoiceEmpty: '未發現可用的語音',
-  configSpeechVoicePrivacy: '使用標記為“遠端”的語音時，您的文本將會傳送至第三方的伺服器以轉換語音。您可以在使用前首先確認對應的隱私權聲明。',
-  configSpeechPitch: '語調',
-  configSpeechPitchNum: pitch => {
-    if (pitch === 0) return '0 (最低)';
-    if (pitch === 2) return '2 (最高)';
-    if (pitch === 1) return '1 (預設)';
-    else return String(pitch);
-  },
-  configSpeechRate: '語速',
-  configSpeechRateNum: rate => {
-    if (rate === 1) return '1× (預設)';
-    return rate + '×';
-  },
-  configSpeechTapPage: '朗讀時點按翻頁',
-  configSpeechTapPageEnable: '允許',
-  configSpeechTapPageDisable: '停用',
-  configSpeechTapPageDescription: '停用點按翻頁後您仍然可以滑動熒幕以翻頁。',
-  configSpeechPauseInBackground: '在背景時暫停',
-  configSpeechPauseInBackgroundPause: '暫停',
-  configSpeechPauseInBackgroundContinue: '繼續',
   configScreenGroupTitle: '螢幕',
   configAutoLock: '自動鎖定',
   configAutoLockNormal: '裝置預設',
-  configAutoLockSpeech: '朗讀時停用',
   configAutoLockDisable: '永遠停用',
   configHelpGroupTitle: '說明',
   configHelpTopic: '說明',
@@ -169,8 +144,6 @@ export default {
   buttonBookmark: '書籤',
   buttonSearch: '搜尋',
   buttonJump: '跳到',
-  buttonSpeech: '開始朗讀',
-  buttonSpeechStop: '停止朗讀',
   buttonContentsRefresh: '重新整理目錄',
   buttonSearchSubmit: '搜尋',
   buttonSearchClear: '清除搜尋結果',

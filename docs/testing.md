@@ -2,16 +2,18 @@
 
 ## 1. 自动测试
 
-根 `package.json` 当前没有通用 `npm test` 或 lint script。可执行入口如下：
+根 `package.json` 已提供通用 `npm test` 入口；当前没有独立 lint script。可执行入口如下：
 
 ```powershell
-npm run test:toc
+npm.cmd test
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
-`npm run test:toc` 运行 `scripts/test-toc.cjs`，验证 TXT 目录识别和自动分段。
+`npm.cmd test` 会按文件名串行运行 `scripts/test-*.mjs` 和 `scripts/test-*.cjs`，其中包含 `test-toc.cjs`。单独运行 `npm run test:toc` 仍可只验证 TXT 目录识别和自动分段。
 
-现有 Node tests 未全部注册为 npm script；可显式运行：
+其中还包括 Service Worker 清单/hash、CSP 三处配置一致性和 IndexedDB v3 分块 schema 测试。
+
+需要定位单个测试时，可显式运行：
 
 ```powershell
 node --test scripts/test-settings-migration.mjs

@@ -118,34 +118,9 @@ export default {
   configAutoTocDetect: 'Generate TOC',
   configAutoTocDetectDisable: 'Manually',
   configAutoTocDetectEnable: 'Automatically',
-  configSpeechGroupTitle: 'Speech',
-  configSpeechVoice: 'Voice',
-  configSpeechVoiceRemote: '(Remote)',
-  configSpeechVoiceEmpty: 'No available speech voice detected.',
-  configSpeechVoicePrivacy: 'Using voices marked as "remote", if there are any, would send your text to a third party online service. You may check their privacy statement before using these services.',
-  configSpeechPitch: 'Speech Pitch',
-  configSpeechPitchNum: pitch => {
-    if (pitch === 0) return '0 (lowest)';
-    if (pitch === 2) return '2 (highest)';
-    if (pitch === 1) return '1 (default)';
-    else return String(pitch);
-  },
-  configSpeechRate: 'Speech Rate',
-  configSpeechRateNum: rate => {
-    if (rate === 1) return '1× (normal)';
-    return rate + '×';
-  },
-  configSpeechTapPage: 'Tap Page When Speech',
-  configSpeechTapPageEnable: 'Enable',
-  configSpeechTapPageDisable: 'Disable',
-  configSpeechTapPageDescription: 'You can still flip pages by sliding when tap-to-flip is disabled.',
-  configSpeechPauseInBackground: 'Pause In Background',
-  configSpeechPauseInBackgroundPause: 'Pause',
-  configSpeechPauseInBackgroundContinue: 'Continue',
   configScreenGroupTitle: 'Screen',
   configAutoLock: 'Auto-Lock',
   configAutoLockNormal: 'Device Default',
-  configAutoLockSpeech: 'Disable During Speech',
   configAutoLockDisable: 'Disable Always',
   configHelpGroupTitle: 'Help',
   configHelpTopic: 'Help',
@@ -168,8 +143,6 @@ export default {
   buttonBookmark: 'Bookmark',
   buttonSearch: 'Search',
   buttonJump: 'Jump to',
-  buttonSpeech: 'Start Text to Speech',
-  buttonSpeechStop: 'Stop Text to Speech',
   buttonContentsRefresh: 'Refresh Table of Contents',
   buttonSearchSubmit: 'Search',
   buttonSearchClear: 'Clear Search Result',

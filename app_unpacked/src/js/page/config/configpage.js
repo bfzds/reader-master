@@ -340,95 +340,6 @@ class FontConfigOptionPage extends SelectConfigOptionPage {
   }
 }
 
-/* VoiceConfigOptionPage removed with speech support.
-class VoiceConfigOptionPage extends SelectConfigOptionPage {
-  constructor(container, mainPage) {
-    super(container, mainPage);
-
-    // @type {SpeechSynthesisVoice[]}
-    this.voiceList = [];
-    // @type {SpeechSynthesisVoice}
-    this.preferVoice = null;
-
-    this.emptyListRender = this.emptyListRender.bind(this);
-  }
-  onFirstActivate() {
-    super.onFirstActivate();
-
-    this.description = this.container.querySelector('.config-option-voice-description');
-
-    const update = () => {
-      const prefer = speech.getPreferVoice();
-      const list = speech.getVoiceList();
-      this.updateVoiceList(list, prefer);
-    };
-    this.updateVoiceList([], null);
-    Promise.all([
-      speech.getVoiceListAsync(),
-      speech.getPreferVoiceAsync(),
-    ]).then(([list, prefer]) => {
-      this.updateVoiceList(list, prefer);
-      speech.onVoiceListChange(update);
-      speech.onPreferVoiceChange(update);
-    });
-    speech.onVoiceListChange(() => { update(); });
-    speech.onPreferVoiceChange(prefer => { this.updatePrefer(prefer); });
-  }
-  async updateVoiceList(list, prefer) {
-    this.voiceList = list;
-    this.preferVoice = prefer;
-    if (this.itemList) {
-      this.itemList.setList(await this.optionList());
-      await this.renderValue(await this.getValue());
-    }
-  }
-  async updatePrefer(prefer) {
-    this.preferVoice = prefer;
-    if (this.itemList) {
-      await this.renderValue(await this.getValue());
-    }
-  }
-  async optionList() {
-    return this.voiceList.map(voice => ({
-      text: `${voice.lang} ${voice.name}`,
-      value: voice.voiceURI,
-    }));
-  }
-  async getValue() {
-    if (this.preferVoice) {
-      return this.preferVoice.voiceURI;
-    }
-    if (this.voiceList.length) {
-      return this.voiceList[0].voiceURI;
-    }
-    return null;
-  }
-  async setConfigOption(configOption) {
-    this.configOption = configOption;
-    this.titleElement.textContent = configOption.title;
-    await this.renderOptions();
-    const value = await this.getValue();
-    if (this.configOption !== configOption) return;
-    this.renderValue(value);
-  }
-  async renderOptions() {
-    await super.renderOptions();
-    this.description.textContent = this.configOption.description;
-  }
-  cleanUp() {
-    this.configOption = null;
-    if (this.itemList) {
-      this.itemList.dispatch();
-      this.itemList = null;
-    }
-  }
-  emptyListRender(container) {
-    const text = container.appendChild(document.createElement('div'));
-    text.textContent = i18n.getMessage('configSpeechVoiceEmpty');
-  }
-}
-*/
-
 class TextConfigOptionPage extends ConfigOptionPage {
   constructor(container, mainPage) {
     super(container, mainPage);
@@ -666,5 +577,4 @@ export default class ConfigPage extends Page {
     this.router.go('list');
   }
 }
-
 
