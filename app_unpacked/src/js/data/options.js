@@ -10,7 +10,6 @@
 import config from './config.js';
 import i18n from '../i18n/i18n.js';
 import template from '../ui/util/template.js';
-import app from './app.js';
 import wakelock from '../ui/util/wakelock.js';
 import file from './file.js';
 import {
@@ -337,15 +336,6 @@ class StubConfigOption extends ConfigOption {
   }
 }
 
-class WebpageConfigOption extends StubConfigOption {
-  /** @param {{ url: string }} config */
-  constructor(config) {
-    super(config);
-    this.url = config.url;
-  }
-  get type() { return 'webpage'; }
-}
-
 class ValueConfigOption extends ConfigOption {
   /** @param {{ name: string, title: string, default: any, validator?: (any) => boolean, normalize: (any) => any }} config */
   constructor(config) {
@@ -523,31 +513,6 @@ const options = (factory => {
     return cache;
   };
 })(() => [{
-  id: 'app_install',
-  title: i18n.getMessage('configInstallGroupTitle'),
-  items: [Object.assign(new ButtonConfigOption({
-    title: i18n.getMessage('configInstallButton'),
-    onClick() {
-      if (app.supportInstall) app.showPrompt();
-      else if (app.hasIosInstallTip) {
-        // Simply show guides to tell user how to install
-        void showAlert(i18n.getMessage('configInstallIosGuide'));
-      }
-    },
-  }), {
-    async setup(container) {
-      Object.getPrototypeOf(this).setup.call(this, container);
-      const button = container.closest('button');
-      if (!app.supportInstall && !app.hasIosInstallTip) {
-        button.disabled = true;
-      }
-      app.promptAvailable.then(() => {
-        button.disabled = false;
-      });
-    },
-  })],
-  description: i18n.getMessage('configInstallGroupDescription'),
-}, {
   title: i18n.getMessage('configModeGroupTitle'),
   items: [new SelectConfigOption({
     name: 'view_mode',
@@ -683,20 +648,8 @@ const options = (factory => {
     default: 'normal',
   })],
 }] : []), {
-  title: i18n.getMessage('configHelpGroupTitle'),
-  items: [new WebpageConfigOption({
-    title: i18n.getMessage('configHelpTopic'),
-    url: `./help/${i18n.getMessage('configHelpFilename')}`,
-  }), new WebpageConfigOption({
-    title: i18n.getMessage('configHelpCredits'),
-    url: './help/credits.html',
-  }), new WebpageConfigOption({
-    title: i18n.getMessage('configHelpPrivacy'),
-    url: './help/privacy.html',
-  }), new WebpageConfigOption({
-    title: i18n.getMessage('configHelpAbout'),
-    url: './help/about.html',
-  }), new SelectConfigOption({
+  title: i18n.getMessage('configSystemGroupTitle'),
+  items: [new SelectConfigOption({
     name: 'locale',
     title: i18n.getMessage('configLocale'),
     select: [

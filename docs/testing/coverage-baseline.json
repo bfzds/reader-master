@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-08-05",
+  "commit": "9fede76783b2746e87b882d23e6e45131a50c054",
+  "node": "v24.14.0",
+  "npm": "11.9.0",
+  "command": "npm run test:coverage",
+  "tool": "c8@12.0.0",
+  "include": [
+    "app_unpacked/src/js/data/**/*.js",
+    "app_unpacked/src/js/text/**/*.js",
+    "app_unpacked/src/js/platform/**/*.js"
+  ],
+  "exclude": [
+    "**/*.test.js",
+    "**/*.test.mjs"
+  ],
+  "reporters": [
+    "text",
+    "lcov"
+  ],
+  "reportsDir": "artifacts/coverage",
+  "totals": {
+    "linesFound": 3423,
+    "linesHit": 823,
+    "linesPercent": 24.04,
+    "functionsFound": 125,
+    "functionsHit": 57,
+    "functionsPercent": 45.6,
+    "branchesFound": 280,
+    "branchesHit": 227,
+    "branchesPercent": 81.07
+  },
+  "notes": [
+    "This is a reporting baseline, not a PR blocking threshold.",
+    "Node child-process coverage is collected by c8's subprocess instrumentation.",
+    "DOM-only, Tauri IPC-only, build output, scripts and test files are outside the production include set."
+  ]
+}
