@@ -18,6 +18,9 @@ pub struct StaticServerHandle {
 }
 
 fn sanitize_request_path(root: &Path, request_path: &str) -> Result<PathBuf, ()> {
+  if request_path.starts_with("//") {
+    return Err(());
+  }
   let trimmed = request_path.split('?').next().unwrap_or("/");
   let relative = trimmed.trim_start_matches('/');
   let mut path = PathBuf::from(root);
@@ -136,4 +139,57 @@ pub async fn spawn_static_server(root_dir: PathBuf, host: &str, port: u16) -> Re
   });
   wait_until_server_ready(address).await?;
   Ok(StaticServerHandle { _task: task })
+}
+
+#[cfg(test)]
+mod tests {
+  use super::{is_path_within, path_contains_symlink, sanitize_request_path};
+  use std::fs::{create_dir_all, remove_dir_all, write};
+  use std::path::{Path, PathBuf};
+  use std::time::{SystemTime, UNIX_EPOCH};
+
+  fn temp_test_root() -> PathBuf {
+    let suffix = SystemTime::now()
+      .duration_since(UNIX_EPOCH)
+      .expect("system clock must be after epoch")
+      .as_nanos();
+    std::env::temp_dir().join(format!("treader-shell-test-{}-{suffix}", std::process::id()))
+  }
+
+  #[test]
+  fn request_path_resolves_index_and_ignores_query_string() {
+    let root = PathBuf::from("assets");
+    assert_eq!(sanitize_request_path(&root, "/"), Ok(root.join("index.html")));
+    assert_eq!(
+      sanitize_request_path(&root, "/js/app.js?cache=1"),
+      Ok(root.join("js/app.js"))
+    );
+  }
+
+  #[test]
+  fn request_path_rejects_parent_and_absolute_components() {
+    let root = PathBuf::from("assets");
+    assert!(sanitize_request_path(&root, "/../secret.txt").is_err());
+    assert!(sanitize_request_path(&root, "C:/secret.txt").is_err());
+    assert!(sanitize_request_path(&root, "//server/share.txt").is_err());
+  }
+
+  #[test]
+  fn static_path_checks_use_path_components() {
+    let root = PathBuf::from("assets");
+    assert!(is_path_within(&root, &root.join("index.html")));
+    assert!(!is_path_within(&root, Path::new("assets-old/index.html")));
+  }
+
+  #[test]
+  fn regular_static_files_do_not_look_like_symlinks() {
+    let root = temp_test_root();
+    create_dir_all(&root).expect("create test root");
+    let file = root.join("index.html");
+    write(&file, b"ok").expect("write test asset");
+
+    assert!(!path_contains_symlink(&root, &file));
+
+    remove_dir_all(&root).expect("remove test root");
+  }
 }

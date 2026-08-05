@@ -17,6 +17,8 @@
 6. 运行受影响的自动测试，并完成对应的人工回归。
 7. Node 测试文件必须放在 `scripts/`，并命名为 `test-*.mjs` 或 `test-*.cjs`。`npm test` 会自动发现这两类文件；不要维护手工测试清单。
 
+新增测试必须沿用 `scripts/test-all.mjs` 的发现规则：只会自动运行 `scripts/test-*.mjs` 和 `scripts/test-*.cjs`，测试夹具、辅助模块和普通脚本不能使用 `test-` 前缀。`scripts/test-test-discovery.mjs` 会保护这套规则，禁止为单个测试目录再维护一套平行发现器。
+
 ## 常用验证
 
 ```powershell
@@ -27,6 +29,15 @@ node --test scripts/test-migration-source.mjs
 node --test scripts/test-migration-conflict.mjs
 cargo test --manifest-path src-tauri/Cargo.toml
 npm run tauri:dev
+npm test
+npm run test:toc
+npm run test:performance
+npm run check:syntax
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 ```
 
-详细测试范围见 [测试说明](docs/testing.md)。
+`npm test` 是快速 Node 回归套件；`npm run check:syntax` 只检查活跃前端 `.js` 和 `.mjs` 的语法，不等价于 DOM、IPC 或桌面 E2E 验证。桌面 E2E、覆盖率和运行时 benchmark 只有在对应工具实际验证并落地后才会加入命令。
+
+详细测试范围、基线和人工回归边界见 [测试说明](docs/testing.md)。

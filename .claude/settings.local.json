@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm *)",
+      "Bash(cargo *)",
+      "WebSearch",
+      "Bash(PATH=\"/c/Users/30575/.cargo/bin:$PATH\" npm run *)",
+      "Bash(python *)",
+      "Read(//c/Users/30575/.claude/**)",
+      "WebFetch(domain:github.com)",
+      "Bash(rm -rf /tmp/superpowers)",
+      "Read(//tmp/**)",
+      "Bash(claude plugins *)",
+      "Bash(claude plugin *)",
+      "Bash(gh pr *)",
+      "WebFetch(domain:www.sumatrapdfreader.org)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:doc.qt.io)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:novella.celia.sh)",
+      "WebFetch(domain:www.readest.com)",
+      "WebFetch(domain:readest.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:jordanful.github.io)",
+      "WebFetch(domain:publ.quaal.uk)",
+      "WebFetch(domain:doc.prose-reader.com)",
+      "WebFetch(domain:app.unpkg.com)",
+      "Bash(curl -L --http1.1 --max-time 60 -o /tmp/foliate-readme.md https://raw.githubusercontent.com/johnfactotum/foliate/gtk4/README.md)",
+      "Bash(curl -L --retry 2 -s https://api.github.com/repos/readest/readest/contents/apps/readest-app/package.json)"
+    ]
+  }
+}
