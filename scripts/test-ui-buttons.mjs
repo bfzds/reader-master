@@ -122,9 +122,9 @@ test('migration dialogs use themed classes instead of layout inline styles', asy
     read('app_unpacked/src/css/common/main.css'),
   ]);
   const start = options.indexOf('const chooseMigrationExportOptions');
-  const end = options.indexOf('/**\n * @typedef {Object} ConfigGroup', start);
+  const end = start + options.slice(start).search(/\/\*\*\r?\n \* @typedef \{Object\} ConfigGroup/);
   assert.notEqual(start, -1, 'export dialog function was not found');
-  assert.notEqual(end, -1, 'migration dialog section boundary was not found');
+  assert.notEqual(end, start - 1, 'migration dialog section boundary was not found');
   const dialogs = options.slice(start, end);
 
   for (const className of [
