@@ -372,15 +372,82 @@ button.list-item-container.hover {
   min-width: 72px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--batch-button-border-color);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: transparent;
-  color: inherit;
+  background: var(--button-background);
+  color: var(--button-color);
 }
 
 .modal-button-confirm {
   border-color: var(--active-color);
-  color: var(--active-color);
+  background: var(--button-primary-background);
+  color: var(--button-primary-color);
+}
+
+.modal-button-confirm:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.modal-button-confirm:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.modal-button-cancel,
+.modal-button-close {
+  background: var(--button-background);
+  color: var(--button-color);
+}
+
+dialog.migration-dialog {
+  padding: 20px;
+  background: var(--modal-background);
+  color: var(--modal-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+dialog.migration-dialog-export {
+  width: min(420px, calc(100vw - 40px));
+}
+
+dialog.migration-dialog-conflict {
+  width: min(480px, calc(100vw - 40px));
+}
+
+.migration-dialog-form {
+  box-sizing: border-box;
+  display: block;
+}
+
+.migration-dialog-option {
+  display: block;
+}
+
+.migration-dialog-export .migration-dialog-option {
+  margin: 12px 0;
+}
+
+.migration-dialog-conflict .migration-dialog-option {
+  margin: 10px 0;
+}
+
+.migration-dialog-choices {
+  border: 0;
+  margin: 12px 0;
+  padding: 0;
+}
+
+.migration-dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.migration-dialog-actions > button.ui-button {
+  min-height: 36px;
+  line-height: 34px;
 }
 
 .toast-host {

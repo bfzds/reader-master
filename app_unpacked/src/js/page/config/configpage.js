@@ -169,6 +169,7 @@ class SelectConfigOptionPage extends ConfigOptionPage {
     if (configOption !== this.configOption) return;
     const render = (container, item) => {
       if (container.firstChild) return;
+      container.closest('.list-item-container')?.classList.add('ui-option-button');
       const text = container.appendChild(document.createElement('div'));
       text.classList.add('select-config-option-item');
       text.textContent = item.text;
@@ -258,6 +259,7 @@ class FontConfigOptionPage extends SelectConfigOptionPage {
     super.onFirstActivate();
 
     const selectFontRender = container => {
+      container.closest('.list-item-container')?.classList.add('ui-option-button');
       const selectFontText = container.appendChild(document.createElement('div'));
       selectFontText.classList = 'select-font-button-inner';
       selectFontText.textContent = i18n.getMessage('configTextFontFamilyUpload');
@@ -508,6 +510,7 @@ export default class ConfigPage extends Page {
      * @param {number} index
      */
     const itemRender = (container, item) => {
+      container.closest('.list-item-container')?.classList.add('ui-option-button');
       item.setup(container);
     };
     /** @param {ConfigOption} item */

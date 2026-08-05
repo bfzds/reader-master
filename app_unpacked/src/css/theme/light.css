@@ -24,9 +24,6 @@
   --list-detail-color: #bcbcbe;
   --list-active-background: #f3eddd;
 
-  --menu-background: #eeeeee;
-  --menu-color: #deab3e;
-
   --search-placeholder: #848389;
   --search-background: #e4e3e9;
 
@@ -63,6 +60,25 @@
   --danger-color: #e55;
   --batch-selected-background: rgba(218, 175, 80, 0.15);
   --reader-meta-color: #808080;
+
+  --button-background: #f7f7f7;
+  --button-color: #000;
+  --button-hover-background: #e9e9e9;
+  --button-active-background: #dedede;
+  --button-disabled-background: #e2e2e2;
+  --button-disabled-color: #999;
+  --button-primary-background: #c1752b;
+  --button-primary-color: #fff;
+  --option-background: transparent;
+  --option-color: #000;
+  --option-hover-background: #f3eddd;
+  --option-active-background: #e9ddbe;
+  --option-selected-background: #f3eddd;
+  --option-selected-color: #000;
+  --option-divider-color: #c6c6c8;
+  --switch-off-background: #c6c6c8;
+  --switch-on-background: #c1752b;
+  --switch-thumb-background: #fff;
 
   --light-background: #fff;;
   background-color: var(--light-background);

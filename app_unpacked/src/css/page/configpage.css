@@ -59,10 +59,15 @@
 .config-item {
   padding: 0 25px;
   position: relative;
-  color: var(--config-content-color);
+  color: inherit;
   z-index: 0;
   display: flex;
   flex-wrap: wrap;
+}
+
+button.ui-option-button .config-item {
+  background: inherit;
+  color: inherit;
 }
 
 .config-item:not(:last-child) {
@@ -140,13 +145,13 @@
   right: 0;
   width: 50px;
   height: 30px;
-  background: var(--border-color);
+  background: var(--switch-off-background);
   border-radius: 15px;
   transition: background 0.2s;
 }
 
 .config-item-switch-on .config-item-switch-track {
-  background: var(--active-color);
+  background: var(--switch-on-background);
 }
 
 .config-item-switch-thumb {
@@ -155,7 +160,7 @@
   left: 3px;
   width: 24px;
   height: 24px;
-  background: white;
+  background: var(--switch-thumb-background);
   border-radius: 50%;
   transition: transform 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -176,7 +181,7 @@
 }
 
 .config-option-select-list {
-  line-height: 50px;
+  line-height: normal;
   margin: 35px 0;
 }
 
@@ -195,6 +200,12 @@
   padding: 10px 0;
   line-height: 30px;
   white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+button.ui-option-button .select-config-option-item,
+button.ui-option-button .select-font-button-inner {
+  color: inherit;
 }
 
 #select_font_file {
