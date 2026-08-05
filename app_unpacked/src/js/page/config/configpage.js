@@ -11,7 +11,6 @@ import Page from '../page.js';
 import config from '../../data/config.js';
 import { optionList } from '../../data/options.js';
 import i18n from '../../i18n/i18n.js';
-import theme from '../../theme/theme.js';
 import template from '../../ui/util/template.js';
 import dom from '../../ui/util/dom.js';
 import { TouchGestureListener } from '../../ui/util/touch.js';
@@ -375,51 +374,6 @@ class TextConfigOptionPage extends ConfigOptionPage {
   }
 }
 
-class WebpageConfigOptionPage extends ConfigOptionPage {
-  constructor(container, mainPage) {
-    super(container, mainPage);
-    this.themeChange = this.themeChange.bind(this);
-  }
-  getUrl() {
-    return new URL('#' + theme.getCurrent(), new URL(this.configOption.url, document.baseURI));
-  }
-  onFirstActivate() {
-    this.iframe = this.container.querySelector('iframe');
-    this.placeholder = document.createComment('');
-    this.iframeContainer = this.iframe.parentNode;
-    this.iframeContainer.replaceChild(this.placeholder, this.iframe);
-    super.onFirstActivate();
-  }
-  show() {
-    super.show();
-    this.iframe.src = this.getUrl();
-    const url = this.iframe.src;
-    theme.addChangeListener(this.themeChange);
-    this.iframe.hidden = true;
-    if (this.placeholder.parentNode === this.iframeContainer) {
-      this.iframeContainer.replaceChild(this.iframe, this.placeholder);
-    }
-    this.iframe.addEventListener('load', () => {
-      if (this.iframe.src !== url) return;
-      if (this.iframe.parentNode !== this.iframeContainer) return;
-      this.iframe.title = this.iframe.contentDocument.title;
-      this.iframe.hidden = false;
-    }, { once: true });
-  }
-  hide() {
-    super.hide();
-    this.iframe.src = 'about:blank';
-    this.iframe.title = null;
-    theme.removeChangeListener(this.themeChange);
-    if (this.iframe.parentNode === this.iframeContainer) {
-      this.iframeContainer.replaceChild(this.placeholder, this.iframe);
-    }
-  }
-  themeChange() {
-    this.iframe.src = this.getUrl();
-  }
-}
-
 class ExpertConfigOptionPage extends ConfigOptionPage {
   constructor(container, mainPage) {
     super(container, mainPage);
@@ -468,9 +422,6 @@ export default class ConfigPage extends Page {
     this.textConfigPageElement = document.getElementById('config_page_text');
     this.textConfigPage = new TextConfigOptionPage(this.textConfigPageElement, this);
 
-    this.webpageConfigPageElement = document.getElementById('config_page_webpage');
-    this.webpageConfigPage = new WebpageConfigOptionPage(this.webpageConfigPageElement, this);
-
     this.expertConfigPageElement = document.getElementById('config_page_expert');
     this.expertConfigPage = new ExpertConfigOptionPage(this.expertConfigPageElement, this);
 
@@ -479,7 +430,6 @@ export default class ConfigPage extends Page {
       this.colorConfigPage,
       this.fontConfigPage,
       this.textConfigPage,
-      this.webpageConfigPage,
       this.expertConfigPage,
     ];
     /** @type {ConfigOptionPage} */
@@ -525,7 +475,6 @@ export default class ConfigPage extends Page {
       if (item.subPageType === 'color') subPage = this.colorConfigPage;
       if (item.subPageType === 'font') subPage = this.fontConfigPage;
       if (item.subPageType === 'text') subPage = this.textConfigPage;
-      if (item.subPageType === 'webpage') subPage = this.webpageConfigPage;
       if (item.subPageType === 'expert') subPage = this.expertConfigPage;
       if (this.activeSubConfigPage) {
         this.activeSubConfigPage.cleanUp();

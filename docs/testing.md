@@ -2,11 +2,16 @@
 
 ## 1. 自动测试
 
-根 `package.json` 已提供通用 `npm test` 入口；当前没有独立 lint script。可执行入口如下：
+根 `package.json` 提供快速 Node 回归、TXT 目录专项和活跃前端语法检查入口。语法检查只调用 Node 的 `--check`，不验证 DOM、IndexedDB、Tauri IPC 或桌面窗口行为。可执行入口如下：
 
 ```powershell
 npm.cmd test
+npm.cmd run test:toc
+npm.cmd run test:performance
+npm.cmd run check:syntax
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 ```
 
 `npm.cmd test` 会按文件名串行运行 `scripts/test-*.mjs` 和 `scripts/test-*.cjs`，其中包含 `test-toc.cjs`。单独运行 `npm run test:toc` 仍可只验证 TXT 目录识别和自动分段。
@@ -28,7 +33,24 @@ node --test scripts/test-read-control-layout.mjs
 
 部分 shell 支持 `node --test scripts/test-*.mjs`，但 Windows shell 对 glob 展开行为不同；跨环境验证时优先使用上面的明确文件名。
 
-Rust 当前单元测试覆盖窗口创建策略和基本路径包含判断，不等于完整的文件系统安全测试。`node --check` 只验证语法，不验证浏览器 API、IndexedDB、Tauri IPC 或真实 DOM 行为；修改活跃 JS、Worker 或 `scripts/*.cjs|mjs` 时应检查受影响文件。
+### P0 基线（2026-08-05）
+
+本次基线在 Windows 10 专业版 `10.0.19045`、Node `v24.14.0`、npm `11.9.0`、Rust `1.97.1`、Cargo `1.97.1` 上运行。机器为 AMD Ryzen 7 3700X、15.9 GiB 内存；工作区当时包含未跟踪的计划文档和启动脚本，因此这里记录的是当前可复现基线，不宣称工作树干净。
+
+| 命令 | 结果 | 观测耗时 | 备注 |
+| --- | --- | ---: | --- |
+| `npm test` | 通过 | 约 7.8 s | 23 个测试文件通过 |
+| `npm run test:toc` | 通过 | 约 0.8 s | TXT 目录与自动分段 |
+| `npm run test:performance` | 通过 | 约 1.0 s | 源码结构性能护栏 |
+| `cargo test --manifest-path src-tauri/Cargo.toml` | 通过 | 约 1.5 s | 7 个 Rust 测试通过 |
+| `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` | 未通过 | 约 0.3 s | 现有 `src-tauri` 文件存在 rustfmt 差异，作为独立存量问题记录 |
+| `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings` | 通过 | 约 3.2 s | 无 warning |
+
+基线失败项不能被测试基础设施改动掩盖；如果后续需要修复格式，应单独提交并重新运行完整基线。
+
+Rust 当前单元测试覆盖窗口创建策略和基本路径包含判断，不等于完整的文件系统安全测试。`node --check` 只验证语法，不验证浏览器 API、IndexedDB、Tauri IPC 或真实 DOM 行为；修改活跃 JS、Worker 或 `scripts/*.cjs|mjs` 时应检查受影响文件。`npm run check:syntax` 会递归检查 `app_unpacked/src/` 下的 `.js` 与 `.mjs`，不扫描历史 Electron 代码、构建产物或测试脚本。
+
+后续阶段命令边界：`npm run test:e2e:poc` 只用于验证 Tauri 驱动是否可行；只有 PoC 在本机和 Windows runner 都能稳定启动、定位、隔离数据并保留失败诊断，才启用 `npm run test:e2e`。`npm run test:coverage` 只报告 Node 可驱动生产模块的覆盖率，不设置阻塞 PR 的全局门槛；`npm run test:benchmark` 只输出运行时诊断，不替代 `npm run test:performance`。
 
 ## 2. 人工回归矩阵
 
@@ -70,6 +92,8 @@ Rust 当前单元测试覆盖窗口创建策略和基本路径包含判断，不
 
 ### 阅读功能
 
+- 已自动化覆盖：启动、导入小型 UTF-8 TXT、书库出现、打开阅读页并确认正文存在（`npm run test:e2e`）。
+- 仍需人工或后续 E2E：翻页边界、滚动切换后的异步状态、目录跳转、进度恢复、书签、主题持久化、EPUB 打开与资源失败降级。
 - TXT、GZ、EPUB 导入与文件夹刷新。
 - EPUB 3 `nav` 优先、无有效 `nav` 时 EPUB 2 NCX 回退、导航页排除和 spine 顺序。
 - EPUB 图片占位符、懒加载、关闭图片和资源失败时的 alt/`[image]` 降级；CSS background、SVG、表格、横线与原版布局不应被误判为当前文本重排的保真能力。
@@ -78,6 +102,27 @@ Rust 当前单元测试覆盖窗口创建策略和基本路径包含判断，不
 - 普通下载/分享是 UTF-8 TXT，不是 EPUB round-trip；迁移测试需区分正文导出和原文件导出。
 - 配置页快速连续修改和 Wake Lock 生命周期。
 
+## P1 automated verification
+
+Use these commands after the P0 baseline:
+
+```powershell
+npm.cmd run test:e2e:poc
+npm.cmd run test:e2e
+npm.cmd run test:coverage
+npm.cmd run tauri:build
+```
+
+`test:e2e:poc` only verifies the Tauri WebDriver route, fixed origin, stable selectors and test-data isolation. `test:e2e` adds the smallest user-visible flow: import a temporary UTF-8 TXT file, confirm it appears in the bookshelf, open it and verify the text body.
+
+The E2E runner copies `app_unpacked/src` into a dedicated temporary directory and injects the WDIO guest script there. It never modifies the formal frontend entry point. The Tauri capability that grants `wdio-webdriver:default` is supplied inline through a PoC-only build config, so normal builds do not gain WebDriver permissions.
+
+E2E diagnostics remain in `artifacts/e2e-poc/diagnostics` and `logs/` after failures. Cleanup is restricted to the runner's dedicated temporary root and is refused for any path outside that root.
+
+`test:coverage` uses `c8` and reports only Node-runnable production modules under `app_unpacked/src/js/data`, `app_unpacked/src/js/text` and `app_unpacked/src/js/platform`. It emits text and LCOV reports under `artifacts/coverage`; the initial result is recorded in `docs/testing/coverage-baseline.json` and is informational rather than a blocking threshold.
+
+`test:benchmark` is intentionally separate from structural performance regression tests. It measures deterministic 100 KiB, 5 MiB and 50 MiB text inputs through the production chunk split/join path, and prints p50/p95 time plus peak RSS, heap and external memory. The benchmark is diagnostic only; compare results on the same machine, Node version and input before treating a 20% p95 increase as a regression candidate.
+
 ## 3. 测试限制
 
-当前没有完整自动化 UI/e2e、跨平台文件系统权限矩阵或性能基准。现有测试和人工回归不等于安全审计，也不能覆盖所有 OS 文件系统竞态。
+当前已完成桌面 E2E PoC、最小 TXT 导入 E2E、Node 覆盖率报告和 TXT 分块运行时基准；Windows runner 的实际执行、跨平台文件系统权限矩阵以及完整阅读器回归仍需后续验证。现有测试和人工回归不等于安全审计，也不能覆盖所有 OS 文件系统竞态。`docs/testing.md` 是唯一人工回归矩阵；自动化稳定覆盖的项目会在后续阶段从“必做人工检查”移到自动化说明，暂不适合稳定自动化的风险仍保留在本矩阵中。
