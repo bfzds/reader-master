@@ -16,10 +16,16 @@ import template from '../../ui/util/template.js';
 import dom from '../../ui/util/dom.js';
 import ItemList from '../../ui/component/itemlist.js';
 import Menu from '../../ui/component/menu.js';
+import modal from '../../ui/component/modal.js';
 import importFolder from '../../platform/import-folder.js';
 import runtime from '../../platform/runtime.js';
 import { getImportedBookSource } from '../../data/migration-source.js';
 import { fileFromNativeEntry, getDropFile, getSupportedDropPath, hasFileDrop, isSupportedImportFile } from './file-drop.mjs';
+
+const showAlert = message => modal.alert(message, {
+  title: i18n.getMessage('modalTitle'),
+  closeText: i18n.getMessage('modalClose'),
+}).catch(error => console.warn('List notification failed:', error));
 
 const importFileTypeSet = new Set([
   'text/plain',
@@ -208,7 +214,7 @@ export default class ListPage extends Page {
             await this.importFile(fileFromNativeEntry(entry));
           } catch (error) {
             console.warn('native file drop import failed:', error);
-            alert(i18n.getMessage('listImportFail'));
+            void showAlert(i18n.getMessage('listImportFail'));
           }
         }),
       ]).catch(error => console.warn('native drag-drop listener setup failed:', error));
@@ -274,7 +280,7 @@ export default class ListPage extends Page {
       if (e.message && e.message.includes('已存在')) {
         console.warn('跳过重复书籍:', e.message);
       } else if (showErrorAlert) {
-        alert(i18n.getMessage('listImportFail'));
+        void showAlert(i18n.getMessage('listImportFail'));
       }
     } finally {
       if (manageImportTip) {
@@ -294,13 +300,13 @@ export default class ListPage extends Page {
   async refreshFolderBooksNow() {
     const selection = await importFolder.getSelection();
     if (!selection.handle && !selection.folderId) {
-      alert('请先设置导入文件夹');
+      void showAlert(i18n.getMessage('listRefreshFolderUnset'));
       return;
     }
 
     try {
       this.importTip.style.display = 'block';
-      this.importTip.querySelector('.tip-content span').textContent = '正在扫描导入文件夹...';
+      this.importTip.querySelector('.tip-content span').textContent = i18n.getMessage('listRefreshScanning');
       console.log('开始刷新文件夹书籍...');
 
       const files = await importFolder.listFiles();
@@ -311,7 +317,7 @@ export default class ListPage extends Page {
       console.log(`共找到 ${bookFiles.length} 个书籍文件`);
 
       if (bookFiles.length === 0) {
-        alert('文件夹中没有找到书籍文件');
+        void showAlert(i18n.getMessage('listRefreshEmpty'));
         return;
       }
 
@@ -326,7 +332,7 @@ export default class ListPage extends Page {
       for (let fileIndex = 0; fileIndex < bookFiles.length; fileIndex++) {
         const bookFile = bookFiles[fileIndex];
         try {
-          this.importTip.querySelector('.tip-content span').textContent = `正在导入 ${fileIndex + 1}/${bookFiles.length}...`;
+          this.importTip.querySelector('.tip-content span').textContent = i18n.getMessage('listRefreshImporting', fileIndex + 1, bookFiles.length);
           const bookTitle = text.parseFilename(bookFile.name);
           if (importedSourceNames.has(bookFile.name) || importedTitles.has(bookTitle)) {
             console.log(`跳过已存在的书籍: ${bookFile.name}`);
@@ -362,10 +368,10 @@ export default class ListPage extends Page {
       this.clearSearch();
       this.updateList();
       this.scrollToList();
-      alert(`刷新完成！共导入 ${importedCount} 本新书${failedCount ? `，${failedCount} 本导入失败` : ''}`);
+      modal.toast(i18n.getMessage('listRefreshComplete', importedCount, failedCount));
     } catch (e) {
       console.error('刷新文件夹失败:', e);
-      alert('刷新文件夹失败，请检查权限和文件夹设置');
+      void showAlert(i18n.getMessage('listRefreshFailed', e?.message || e));
     } finally {
       this.importTip.style.display = 'none';
       this.importTip.querySelector('.tip-content span').textContent = i18n.getMessage('listImportTip');
@@ -384,12 +390,12 @@ export default class ListPage extends Page {
         bytes: item,
       });
       if (!saved && showErrorAlert) {
-        alert(i18n.getMessage('listImportSaveFail'));
+        void showAlert(i18n.getMessage('listImportSaveFail'));
       }
     } catch (e) {
       console.warn('save imported file failed:', e);
       if (showErrorAlert) {
-        alert(i18n.getMessage('listImportSaveFail'));
+        void showAlert(i18n.getMessage('listImportSaveFail'));
       }
     }
   }
@@ -449,7 +455,10 @@ export default class ListPage extends Page {
               ? 'TXT'
               : 'TXT/GZ/EPUB';
         const location = item.sourceFolderId ? '\n可重新选择保存原文件的导入目录后恢复。' : '';
-        alert(`这本书只有书架记录，请重新导入原 ${sourceType} 文件后阅读。${location}`);
+        const message = location
+          ? i18n.getMessage('listConfigOnlyBookWithFolder', sourceType, location)
+          : i18n.getMessage('listConfigOnlyBook', sourceType);
+        void showAlert(message);
       } else {
         this.router.go('read', { id: item.id });
       }
@@ -502,15 +511,15 @@ export default class ListPage extends Page {
         return true;
       }
       if (e?.name === 'NotAllowedError') {
-        alert(i18n.getMessage('listImportDeleteNoPermission'));
+        void showAlert(i18n.getMessage('listImportDeleteNoPermission'));
         return false;
       }
       if (e?.name === 'InvalidModificationError') {
-        alert(i18n.getMessage('listImportDeleteIsDirectory'));
+        void showAlert(i18n.getMessage('listImportDeleteIsDirectory'));
         return false;
       }
       console.error('Failed to delete file:', name, e);
-      alert(i18n.getMessage('listImportDeleteFail'));
+      void showAlert(i18n.getMessage('listImportDeleteFail'));
       return false;
     }
   }
@@ -554,7 +563,14 @@ export default class ListPage extends Page {
   }
   async batchDelete() {
     if (this.batchSelected.size === 0) return;
-    const confirmed = confirm('\u786E\u5B9A\u8981\u5220\u9664\u9009\u4E2D\u7684 ' + this.batchSelected.size + ' \u672C\u4E66\u7C4D\u5417\uFF1F');
+    const confirmed = await modal.confirm(i18n.getMessage('listBatchDeleteConfirm', this.batchSelected.size), {
+      title: i18n.getMessage('modalTitle'),
+      confirmText: i18n.getMessage('modalConfirm'),
+      cancelText: i18n.getMessage('modalCancel'),
+    }).catch(error => {
+      console.warn('Batch delete confirmation failed:', error);
+      return false;
+    });
     if (!confirmed) return;
     const ids = [...this.batchSelected];
     for (const id of ids) {
@@ -576,7 +592,7 @@ export default class ListPage extends Page {
     if (this.batchBar) return;
     this.batchBar = document.createElement('div');
     this.batchBar.className = 'batch-action-bar';
-    this.batchBar.innerHTML = '<button class="batch-select-all">\u5168\u9009</button><span class="batch-count"></span><button class="batch-delete">\u5220\u9664</button>';
+    this.batchBar.innerHTML = '<button class="batch-select-all">' + i18n.getMessage('listBatchSelectAll') + '</button><span class="batch-count"></span><button class="batch-delete">' + i18n.getMessage('listBatchDelete') + '</button>';
     this.batchBar.querySelector('.batch-select-all').addEventListener('click', () => this.selectAll());
     this.batchBar.querySelector('.batch-delete').addEventListener('click', () => this.batchDelete());
     this.element.appendChild(this.batchBar);
@@ -585,7 +601,7 @@ export default class ListPage extends Page {
   updateBatchBar() {
     if (!this.batchBar) return;
     const count = this.batchSelected.size;
-    this.batchBar.querySelector('.batch-count').textContent = '\u5DF2\u9009 ' + count + ' \u9879';
+    this.batchBar.querySelector('.batch-count').textContent = i18n.getMessage('listBatchSelectedCount', count);
     this.batchBar.querySelector('.batch-delete').disabled = count === 0;
   }
   async requestFolderPermission(handle) {
@@ -600,7 +616,7 @@ export default class ListPage extends Page {
   async backupBooks() {
     try {
       const backup = await file.exportAll();
-      if (backup.length === 0) { alert('\u4E66\u67B6\u4E0A\u6CA1\u6709\u4E66\u7C4D\u53EF\u5907\u4EFD'); return; }
+      if (backup.length === 0) { void showAlert(i18n.getMessage('listBackupEmpty')); return; }
       const json = JSON.stringify(backup);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -609,7 +625,7 @@ export default class ListPage extends Page {
       a.download = 'tReader-backup-' + new Date().toISOString().slice(0, 10) + '.json';
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e) { console.error('Backup failed:', e); alert('Backup failed: ' + e.message); }
+    } catch (e) { console.error('Backup failed:', e); void showAlert(i18n.getMessage('listBackupFailed', e.message)); }
   }
   async restoreBooks() {
     const input = document.createElement('input');
@@ -621,12 +637,12 @@ export default class ListPage extends Page {
         if (!f) return;
         const txt = await f.text();
         const backup = JSON.parse(txt);
-        if (!Array.isArray(backup)) throw new Error('Invalid backup format');
+        if (!Array.isArray(backup)) { void showAlert(i18n.getMessage('listRestoreInvalidFormat')); return; }
         const count = await file.importBackup(backup);
         this.invalidateFileMetaCache();
         await this.updateList();
-        alert('\u5DF2\u6062\u590D ' + count + ' \u672C\u4E66\u7C4D');
-      } catch (e) { console.error('Restore failed:', e); alert('Restore failed: ' + e.message); }
+        modal.toast(i18n.getMessage('listRestoreComplete', count));
+      } catch (e) { console.error('Restore failed:', e); void showAlert(i18n.getMessage('listRestoreFailed', e.message)); }
     });
     input.click();
   }

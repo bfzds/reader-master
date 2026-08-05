@@ -314,3 +314,97 @@ button.list-item-container.hover {
   outline: none;
 }
 
+.modal-host,
+.toast-host {
+  position: fixed;
+  pointer-events: none;
+}
+
+.modal-host {
+  inset: 0;
+  z-index: 200;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  background: var(--modal-overlay-background);
+}
+
+.modal-panel {
+  width: min(420px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--modal-background);
+  color: var(--modal-color);
+  box-shadow: 0 8px 30px #0005;
+}
+
+.modal-title {
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.modal-message {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-button {
+  min-width: 72px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--batch-button-border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+}
+
+.modal-button-confirm {
+  border-color: var(--active-color);
+  color: var(--active-color);
+}
+
+.toast-host {
+  top: var(--extra-top);
+  right: var(--extra-right);
+  z-index: 210;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(420px, calc(100vw - 40px));
+  max-height: calc(100vh - var(--extra-top) - var(--extra-bottom) - 20px);
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+
+.toast {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--toast-background);
+  color: var(--toast-color);
+  line-height: 1.4;
+  pointer-events: auto;
+}

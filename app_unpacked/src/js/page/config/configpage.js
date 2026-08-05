@@ -17,6 +17,12 @@ import dom from '../../ui/util/dom.js';
 import { TouchGestureListener } from '../../ui/util/touch.js';
 import ItemList from '../../ui/component/itemlist.js';
 import ColorPicker from '../../ui/component/color.js';
+import modal from '../../ui/component/modal.js';
+
+const showAlert = message => modal.alert(message, {
+  title: i18n.getMessage('modalTitle'),
+  closeText: i18n.getMessage('modalClose'),
+}).catch(error => console.warn('Config notification failed:', error));
 
 
 const slideClose = function (container, callback) {
@@ -272,7 +278,7 @@ class FontConfigOptionPage extends SelectConfigOptionPage {
         if (await this.isValidFont(content)) {
           await this.addFont({ name, content });
         } else {
-          alert(i18n.getMessage('readFontFail'));
+          void showAlert(i18n.getMessage('readFontFail'));
         }
         this.selectFontButton.value = '';
       });
@@ -577,4 +583,3 @@ export default class ConfigPage extends Page {
     this.router.go('list');
   }
 }
-
