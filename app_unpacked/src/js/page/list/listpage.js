@@ -592,7 +592,7 @@ export default class ListPage extends Page {
     if (this.batchBar) return;
     this.batchBar = document.createElement('div');
     this.batchBar.className = 'batch-action-bar';
-    this.batchBar.innerHTML = '<button class="batch-select-all">' + i18n.getMessage('listBatchSelectAll') + '</button><span class="batch-count"></span><button class="batch-delete">' + i18n.getMessage('listBatchDelete') + '</button>';
+    this.batchBar.innerHTML = '<button class="batch-select-all ui-button ui-button-secondary">' + i18n.getMessage('listBatchSelectAll') + '</button><span class="batch-count"></span><button class="batch-delete ui-button ui-button-danger">' + i18n.getMessage('listBatchDelete') + '</button>';
     this.batchBar.querySelector('.batch-select-all').addEventListener('click', () => this.selectAll());
     this.batchBar.querySelector('.batch-delete').addEventListener('click', () => this.batchDelete());
     this.element.appendChild(this.batchBar);

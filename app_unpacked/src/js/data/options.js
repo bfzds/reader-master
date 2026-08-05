@@ -402,11 +402,11 @@ const chooseMigrationExportOptions = function () {
       resolve(null);
       return;
     }
-    dialog.style.width = 'min(420px, calc(100vw - 40px))';
-    dialog.style.padding = '20px';
+    dialog.className = 'migration-dialog migration-dialog-export';
 
     const form = document.createElement('form');
     form.method = 'dialog';
+    form.className = 'migration-dialog-form';
     const title = document.createElement('h3');
     title.textContent = i18n.getMessage('migrationExportOptionsTitle');
     const description = document.createElement('p');
@@ -414,20 +414,15 @@ const chooseMigrationExportOptions = function () {
     const contentInput = document.createElement('input');
     contentInput.type = 'checkbox';
     const contentLabel = document.createElement('label');
-    contentLabel.style.display = 'block';
-    contentLabel.style.margin = '12px 0';
+    contentLabel.className = 'migration-dialog-option';
     contentLabel.append(contentInput, ` ${i18n.getMessage('migrationExportIncludeBooks')}`);
     const sourceInput = document.createElement('input');
     sourceInput.type = 'checkbox';
     const sourceLabel = document.createElement('label');
-    sourceLabel.style.display = 'block';
-    sourceLabel.style.margin = '12px 0';
+    sourceLabel.className = 'migration-dialog-option';
     sourceLabel.append(sourceInput, ` ${i18n.getMessage('migrationExportIncludeSources')}`);
     const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.justifyContent = 'flex-end';
-    actions.style.gap = '12px';
-    actions.style.marginTop = '20px';
+    actions.className = 'migration-dialog-actions';
     const cancelButton = document.createElement('button');
     cancelButton.type = 'submit';
     cancelButton.value = 'cancel';
@@ -436,8 +431,8 @@ const chooseMigrationExportOptions = function () {
     exportButton.type = 'submit';
     exportButton.value = 'export';
     exportButton.textContent = i18n.getMessage('migrationExportConfirm');
-    cancelButton.style.minWidth = '72px';
-    exportButton.style.minWidth = '72px';
+    cancelButton.className = 'ui-button ui-button-secondary';
+    exportButton.className = 'ui-button ui-button-primary';
     actions.append(cancelButton, exportButton);
     form.append(title, description, contentLabel, sourceLabel, actions);
     dialog.append(form);
@@ -460,19 +455,17 @@ const showMigrationConflictDialog = function ({ entry, method, candidates }) {
       resolve(null);
       return;
     }
-    dialog.style.width = 'min(480px, calc(100vw - 40px))';
-    dialog.style.padding = '20px';
+    dialog.className = 'migration-dialog migration-dialog-conflict';
 
     const form = document.createElement('form');
     form.method = 'dialog';
+    form.className = 'migration-dialog-form';
     const title = document.createElement('h3');
     title.textContent = i18n.getMessage('migrationConflictTitle', entry.meta?.title || '', method);
     const description = document.createElement('p');
     description.textContent = i18n.getMessage('migrationConflictDescription');
     const choices = document.createElement('fieldset');
-    choices.style.border = '0';
-    choices.style.margin = '12px 0';
-    choices.style.padding = '0';
+    choices.className = 'migration-dialog-choices';
     candidates.forEach((candidate, index) => {
       const input = document.createElement('input');
       input.type = 'radio';
@@ -480,18 +473,13 @@ const showMigrationConflictDialog = function ({ entry, method, candidates }) {
       input.value = String(index);
       input.checked = index === 0;
       const label = document.createElement('label');
-      label.style.display = 'block';
-      label.style.margin = '10px 0';
+      label.className = 'migration-dialog-option';
       const sourceName = candidate.sourceName ? `，文件：${candidate.sourceName}` : '';
       label.append(input, ` ${index + 1}. ${candidate.title || '未命名'}${sourceName}`);
       choices.append(label);
     });
     const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.flexWrap = 'wrap';
-    actions.style.justifyContent = 'flex-end';
-    actions.style.gap = '12px';
-    actions.style.marginTop = '20px';
+    actions.className = 'migration-dialog-actions';
     for (const [value, text] of [
       ['once', i18n.getMessage('migrationConflictConfirm')],
       ['apply', i18n.getMessage('migrationConflictUseExisting')],
@@ -501,6 +489,9 @@ const showMigrationConflictDialog = function ({ entry, method, candidates }) {
       button.type = 'submit';
       button.value = value;
       button.textContent = text;
+      button.className = value === 'once'
+        ? 'ui-button ui-button-primary'
+        : 'ui-button ui-button-secondary';
       actions.append(button);
     }
     form.append(title, description, choices, actions);
