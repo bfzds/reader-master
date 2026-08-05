@@ -52,6 +52,18 @@
   --alert-background: #efefef;
   --alert-text: #000;
 
+  --modal-overlay-background: #0007;
+  --modal-background: #fff;
+  --modal-color: #000;
+  --toast-background: #333;
+  --toast-color: #fff;
+  --batch-bar-background: #333;
+  --batch-bar-color: #fff;
+  --batch-button-border-color: #888;
+  --danger-color: #e55;
+  --batch-selected-background: rgba(218, 175, 80, 0.15);
+  --reader-meta-color: #808080;
+
   --light-background: #fff;;
   background-color: var(--light-background);
 }

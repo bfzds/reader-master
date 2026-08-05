@@ -76,7 +76,7 @@ test('dynamic Phase 1 locale messages include supplied values', () => {
     for (const locale of Object.values(locales)) {
       const text = formatLocaleValue(locale, key, ...args);
       assert.doesNotMatch(text, /\{\d+\}/, `${key} left an unresolved placeholder`);
-      assert.doesNotContain(text, 'undefined', `${key} emitted undefined`);
+      assert.doesNotMatch(text, /undefined/, `${key} emitted undefined`);
       for (const value of args) assert.ok(text.includes(String(value)), `${key} omitted ${value}`);
     }
   }
@@ -173,18 +173,17 @@ test('Phase 1 theme tokens replace hard-coded UI colors', async () => {
     assert.match(light, new RegExp(`${token}:`), `light theme is missing ${token}`);
     assert.match(dark, new RegExp(`${token}:`), `dark theme is missing ${token}`);
   }
-  assert.doesNotContain(list, 'var(--alert-color)');
+  assert.doesNotMatch(list, /var\(--alert-color\)/);
   for (const value of ['background: #333', 'color: white', 'border: 1px solid #888', 'border-color: #e55', 'color: #e55', 'rgba(218, 175, 80, 0.15)']) {
-    assert.doesNotContain(list, value);
+    assert.doesNotMatch(list, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(flip, /color: var\(--reader-meta-color\)/);
   assert.match(scroll, /color: var\(--reader-meta-color\)/);
-  assert.doesNotContain(flip, 'color: #808080');
-  assert.doesNotContain(scroll, 'color: #808080');
+  assert.doesNotMatch(flip, /color: #808080/);
+  assert.doesNotMatch(scroll, /color: #808080/);
 });
 
 test('Modal module is precached by the Service Worker', async () => {
   const source = await readProjectFile('app_unpacked/src/sw.js');
   assert.match(source, /['"]\.\/js\/ui\/component\/modal\.js['"]/);
 });
-

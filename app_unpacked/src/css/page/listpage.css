@@ -164,7 +164,7 @@ button.list-sort {
   line-height: 20px;
   font-size: 20px;
   background: var(--alert-background);
-  color: var(--alert-color);
+  color: var(--alert-text);
   text-align: center;
   border-radius: 10px;
   z-index: 10;
@@ -187,15 +187,15 @@ button.list-sort {
 
 /* Batch select & delete */
 .list-item-batch-selected .list-item-content-wrap {
-  background: rgba(218, 175, 80, 0.15);
+  background: var(--batch-selected-background);
 }
 .batch-action-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #333;
-  color: white;
+  background: var(--batch-bar-background);
+  color: var(--batch-bar-color);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -205,10 +205,10 @@ button.list-sort {
 }
 .batch-action-bar button {
   padding: 6px 14px;
-  border: 1px solid #888;
+  border: 1px solid var(--batch-button-border-color);
   border-radius: 4px;
   background: transparent;
-  color: white;
+  color: var(--batch-bar-color);
   cursor: pointer;
 }
 .batch-action-bar button:disabled {
@@ -217,8 +217,8 @@ button.list-sort {
 }
 .batch-action-bar .batch-delete {
   margin-left: auto;
-  border-color: #e55;
-  color: #e55;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
 }
 .batch-action-bar .batch-count {
   flex: 1;
