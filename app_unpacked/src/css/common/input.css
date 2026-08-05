@@ -28,6 +28,106 @@ button .icon {
   margin: -14px;
 }
 
+button.ui-button {
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--button-background);
+  color: var(--button-color);
+  white-space: nowrap;
+}
+
+button.ui-button.ui-button-primary {
+  border-color: var(--active-color);
+  background: var(--button-primary-background);
+  color: var(--button-primary-color);
+}
+
+button.ui-button.ui-button-secondary {
+  background: var(--button-background);
+  color: var(--button-color);
+}
+
+button.ui-button.ui-button-danger {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+button.ui-icon-button {
+  color: var(--active-color);
+}
+
+button.ui-option-button {
+  box-sizing: border-box;
+  border: 0;
+  background: var(--option-background);
+  color: var(--option-color);
+}
+
+button.ui-button:hover {
+  background: var(--button-hover-background);
+}
+
+button.ui-option-button:hover {
+  background: var(--option-hover-background);
+}
+
+button.ui-button:active {
+  background: var(--button-active-background);
+}
+
+button.ui-option-button:active {
+  background: var(--option-active-background);
+}
+
+li.list-item-selected > button.ui-option-button {
+  background: var(--option-selected-background);
+  color: var(--option-selected-color);
+}
+
+button.ui-button.ui-button-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+button.ui-button.ui-button-primary:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+li.list-item-selected > button.ui-option-button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+li.list-item-selected > button.ui-option-button:active:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+button.screen-option-item.ui-option-button:not(:last-child) {
+  border-bottom: 1px solid var(--option-divider-color);
+}
+
+button.ui-button:disabled,
+button.ui-option-button:disabled {
+  background: var(--button-disabled-background);
+  color: var(--button-disabled-color);
+}
+
+button.ui-icon-button:disabled {
+  opacity: 0.45;
+}
+
+button.ui-button.ui-button-primary:disabled,
+button.ui-button.ui-button-danger:disabled,
+li.list-item-selected > button.ui-option-button:disabled {
+  background: var(--button-disabled-background);
+  color: var(--button-disabled-color);
+}
+
+button.ui-button.ui-button-primary:disabled,
+button.ui-button.ui-button-danger:disabled {
+  border-color: var(--button-disabled-color);
+}
+
 .range-outer {
   padding: 10px;
   height: 40px;
@@ -258,9 +358,6 @@ button.screen-option-item {
   height: 53px;
   line-height: 53px;
   font-size: 22px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--menu-background);
-  color: var(--menu-color);
   text-align: left;
 }
 
