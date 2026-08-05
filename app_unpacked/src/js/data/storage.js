@@ -19,6 +19,7 @@ import {
   upgradeContentSchema,
 } from './storage-chunks.js';
 import { reportError } from './errors.js';
+import modal from '../ui/component/modal.js';
 
 const storage = {};
 
@@ -38,7 +39,10 @@ const dbPromise = new Promise((resolve, reject) => {
   const fail = (message, cause) => {
     if (settled) return;
     settled = true;
-    try { alert(i18n.getMessage('storageOpenFail')); } catch (_ignore) { }
+    void modal.alert(i18n.getMessage('storageOpenFail'), {
+      title: i18n.getMessage('modalTitle'),
+      closeText: i18n.getMessage('modalClose'),
+    }).catch(error => console.warn('Storage notification failed:', error));
     reject(storageError(message, cause));
   };
   let request;

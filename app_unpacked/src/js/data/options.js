@@ -21,6 +21,12 @@ import { createMigrationSavePayload } from './migration-export.js';
 import { getMigrationSourceSaveRequest } from './migration-source.js';
 import importFolder from '../platform/import-folder.js';
 import text from '../text/text.js';
+import modal from '../ui/component/modal.js';
+
+const showAlert = message => modal.alert(message, {
+  title: i18n.getMessage('modalTitle'),
+  closeText: i18n.getMessage('modalClose'),
+}).catch(error => console.warn('Options notification failed:', error));
 
 class ConfigOption {
   /** @param {{ name: string, description: string?, title: string }} config */
@@ -196,7 +202,7 @@ class DirectoryConfigOption extends ConfigOption {
   }
   async pickDirectory() {
     if (!importFolder.supported()) {
-      alert(i18n.getMessage('configImportSaveFolderNotSupported'));
+      void showAlert(i18n.getMessage('configImportSaveFolderNotSupported'));
       return;
     }
     try {
@@ -205,7 +211,7 @@ class DirectoryConfigOption extends ConfigOption {
       await this.setConfig(result.name || null);
     } catch (e) {
       console.error('选择导入文件保存文件夹失败:', e);
-      alert(`选择导入文件保存文件夹失败：${e?.message || e}`);
+      void showAlert(i18n.getMessage('listRefreshFailed', e?.message || e));
     }
   }
 }
@@ -402,21 +408,21 @@ const chooseMigrationExportOptions = function () {
     const form = document.createElement('form');
     form.method = 'dialog';
     const title = document.createElement('h3');
-    title.textContent = '导出迁移数据';
+    title.textContent = i18n.getMessage('migrationExportOptionsTitle');
     const description = document.createElement('p');
-    description.textContent = '请选择要放入迁移文件的内容。导出原文件会明显增大文件体积。';
+    description.textContent = i18n.getMessage('migrationExportPreparing');
     const contentInput = document.createElement('input');
     contentInput.type = 'checkbox';
     const contentLabel = document.createElement('label');
     contentLabel.style.display = 'block';
     contentLabel.style.margin = '12px 0';
-    contentLabel.append(contentInput, ' 导出正文');
+    contentLabel.append(contentInput, ` ${i18n.getMessage('migrationExportIncludeBooks')}`);
     const sourceInput = document.createElement('input');
     sourceInput.type = 'checkbox';
     const sourceLabel = document.createElement('label');
     sourceLabel.style.display = 'block';
     sourceLabel.style.margin = '12px 0';
-    sourceLabel.append(sourceInput, ' 导出原文件');
+    sourceLabel.append(sourceInput, ` ${i18n.getMessage('migrationExportIncludeSources')}`);
     const actions = document.createElement('div');
     actions.style.display = 'flex';
     actions.style.justifyContent = 'flex-end';
@@ -425,11 +431,11 @@ const chooseMigrationExportOptions = function () {
     const cancelButton = document.createElement('button');
     cancelButton.type = 'submit';
     cancelButton.value = 'cancel';
-    cancelButton.textContent = '取消';
+    cancelButton.textContent = i18n.getMessage('migrationExportCancel');
     const exportButton = document.createElement('button');
     exportButton.type = 'submit';
     exportButton.value = 'export';
-    exportButton.textContent = '导出';
+    exportButton.textContent = i18n.getMessage('migrationExportConfirm');
     cancelButton.style.minWidth = '72px';
     exportButton.style.minWidth = '72px';
     actions.append(cancelButton, exportButton);
@@ -460,9 +466,9 @@ const showMigrationConflictDialog = function ({ entry, method, candidates }) {
     const form = document.createElement('form');
     form.method = 'dialog';
     const title = document.createElement('h3');
-    title.textContent = `迁移书籍“${entry.meta?.title || ''}”存在多个匹配项（${method}）`;
+    title.textContent = i18n.getMessage('migrationConflictTitle', entry.meta?.title || '', method);
     const description = document.createElement('p');
-    description.textContent = '请选择要恢复到的书籍。';
+    description.textContent = i18n.getMessage('migrationConflictDescription');
     const choices = document.createElement('fieldset');
     choices.style.border = '0';
     choices.style.margin = '12px 0';
@@ -487,9 +493,9 @@ const showMigrationConflictDialog = function ({ entry, method, candidates }) {
     actions.style.gap = '12px';
     actions.style.marginTop = '20px';
     for (const [value, text] of [
-      ['once', '确定'],
-      ['apply', '确定并应用到后续冲突'],
-      ['cancel', '取消'],
+      ['once', i18n.getMessage('migrationConflictConfirm')],
+      ['apply', i18n.getMessage('migrationConflictUseExisting')],
+      ['cancel', i18n.getMessage('migrationConflictCancel')],
     ]) {
       const button = document.createElement('button');
       button.type = 'submit';
@@ -534,8 +540,7 @@ const options = (factory => {
       if (app.supportInstall) app.showPrompt();
       else if (app.hasIosInstallTip) {
         // Simply show guides to tell user how to install
-        // An `alert` should be enough here
-        alert(i18n.getMessage('configInstallIosGuide'));
+        void showAlert(i18n.getMessage('configInstallIosGuide'));
       }
     },
   }), {
@@ -717,9 +722,9 @@ const options = (factory => {
     description: i18n.getMessage('configLocaleDescription'),
   })],
 }, {
-  title: '数据与配置',
+  title: i18n.getMessage('migrationGroupTitle'),
   items: [new ButtonConfigOption({
-    title: '导出迁移数据',
+    title: i18n.getMessage('migrationExportButton'),
     onClick: async () => {
       let importTip = null;
       try {
@@ -728,7 +733,7 @@ const options = (factory => {
         importTip = document.querySelector('#import_tip');
         const importTipText = importTip?.querySelector('.tip-content span');
         if (importTip) importTip.style.display = 'block';
-        if (importTipText) importTipText.textContent = '正在准备导出迁移数据…';
+        if (importTipText) importTipText.textContent = i18n.getMessage('migrationExportPreparing');
           const backup = await file.exportMigration(await file.exportSettings(), {
             ...exportOptions,
             resolveSource: async meta => {
@@ -738,10 +743,10 @@ const options = (factory => {
               return importFolder.readFile({ name, folderId });
             },
             onProgress: ({ current, total }) => {
-            if (importTipText) importTipText.textContent = `正在导出迁移数据 ${current}/${total}`;
+            if (importTipText) importTipText.textContent = i18n.getMessage('migrationExportProgress', current, total);
           },
         });
-        if (importTipText) importTipText.textContent = '正在整理迁移文件…';
+        if (importTipText) importTipText.textContent = i18n.getMessage('migrationExportFinalizing');
         const json = JSON.stringify(backup);
         const filename = 'tReader-migration-' + new Date().toISOString().slice(0, 10) + '.json';
         const bytes = new TextEncoder().encode(json);
@@ -768,16 +773,16 @@ const options = (factory => {
             setTimeout(() => URL.revokeObjectURL(url), 0);
           }
         }
-        alert('迁移数据已导出');
+        modal.toast(i18n.getMessage('migrationExportComplete'));
       } catch (error) {
         console.error('Migration export failed:', error);
-        alert('迁移数据导出失败：' + error.message);
+        void showAlert(i18n.getMessage('migrationExportFailed', error.message));
       } finally {
         if (importTip) importTip.style.display = 'none';
       }
     },
   }), new ButtonConfigOption({
-    title: '导入迁移数据',
+    title: i18n.getMessage('migrationImportButton'),
     onClick: () => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -788,7 +793,7 @@ const options = (factory => {
           if (!selected) return;
           const backup = JSON.parse(await selected.text());
           if (!backup || backup.format !== 'treader-migration' || backup.version !== 2 || !Array.isArray(backup.books)) {
-            throw new Error('Invalid tReader migration file');
+            throw new Error(i18n.getMessage('migrationInvalidFile'));
           }
           await file.importSettings(backup.config || {});
           const importTip = document.querySelector('#import_tip');
@@ -797,7 +802,7 @@ const options = (factory => {
           const resolveConflict = createMigrationConflictResolver(showMigrationConflictDialog);
           const result = await file.importMigration(backup, {
             onProgress: ({ current, total, title }) => {
-              if (importTipText) importTipText.textContent = `正在迁移 ${current}/${total}：${title || ''}`;
+              if (importTipText) importTipText.textContent = i18n.getMessage('migrationImportProgress', current, total, title || '');
             },
             resolveConflict,
             resolveSource: async entry => {
@@ -842,13 +847,21 @@ const options = (factory => {
             },
           });
           if (importTip) importTip.style.display = 'none';
-          alert(`迁移完成：匹配 ${result.restored} 本，路径找到 ${result.pathResolved} 本，路径不存在 ${result.pathNotFound} 本，默认文件保存 ${result.sourceSaved} 本，保存失败 ${result.sourceSaveFailed} 本，新增 ${result.added} 本，占位 ${result.placeholders} 本，冲突 ${result.ambiguous} 本，失败 ${result.errors} 本。`);
+          const summary = i18n.getMessage('migrationImportComplete', result.restored, result.pathResolved, result.pathNotFound, result.sourceSaved, result.sourceSaveFailed, result.added, result.placeholders, result.ambiguous, result.errors);
+          try {
+            await modal.alert(summary, {
+              title: i18n.getMessage('modalTitle'),
+              closeText: i18n.getMessage('modalClose'),
+            });
+          } catch (notificationError) {
+            console.warn('Migration summary notification failed:', notificationError);
+          }
           location.reload();
         } catch (error) {
           const importTip = document.querySelector('#import_tip');
           if (importTip) importTip.style.display = 'none';
           console.error('Migration import failed:', error);
-          alert('迁移数据导入失败：' + error.message);
+          void showAlert(i18n.getMessage('migrationImportFailed', error.message));
         }
       });
       input.click();

@@ -52,7 +52,18 @@
   --alert-background: #262626;
   --alert-text: #fff;
 
+  --modal-overlay-background: #0009;
+  --modal-background: #262626;
+  --modal-color: #fff;
+  --toast-background: #f0f0f0;
+  --toast-color: #000;
+  --batch-bar-background: #262626;
+  --batch-bar-color: #fff;
+  --batch-button-border-color: #707070;
+  --danger-color: #ff7766;
+  --batch-selected-background: rgba(220, 177, 61, 0.18);
+  --reader-meta-color: #a5a5a5;
+
   --dark-background: #000;
   background-color: var(--dark-background);
 }
-
