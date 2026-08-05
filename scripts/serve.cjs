@@ -14,6 +14,8 @@ const CONTENT_TYPES = {
   '.html': 'text/html; charset=UTF-8',
   '.ico': 'image/x-icon',
   '.js': 'text/javascript; charset=UTF-8',
+  // WebView2 enforces a JavaScript MIME type for ES module files.
+  '.mjs': 'text/javascript; charset=UTF-8',
   '.json': 'application/json; charset=UTF-8',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',

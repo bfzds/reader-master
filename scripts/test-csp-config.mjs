@@ -28,9 +28,10 @@ test('development and production CSP sources are internally consistent', async (
   const tauri = normalize(config.app.security.csp);
 
   assert.equal(withoutConnectSource(dev), withoutConnectSource(prod));
-  assert.equal(connectSource(dev), "'self'");
+  assert.match(connectSource(dev), /http:\/\/ipc\.localhost/);
   assert.match(connectSource(prod), /http:\/\/ipc\.localhost/);
   if (serve) assert.equal(normalize(serve), dev);
   if (shell) assert.equal(normalize(shell), prod);
   assert.equal(tauri, prod);
+  assert.match(serveSource, /['"]\.mjs['"]\s*:\s*['"]text\/javascript; charset=UTF-8['"]/);
 });
