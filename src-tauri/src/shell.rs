@@ -81,7 +81,8 @@ async fn serve_file(root: PathBuf, request: Request<Incoming>) -> Result<Respons
         .status(StatusCode::OK)
         .header("Content-Type", mime.as_ref())
         .header("Cache-Control", "no-cache, no-store, must-revalidate")
-        .header("Content-Security-Policy", CONTENT_SECURITY_POLICY)
+        // include_str! keeps the source file's trailing newline, which is invalid in an HTTP header.
+        .header("Content-Security-Policy", CONTENT_SECURITY_POLICY.trim())
         .header("X-Content-Type-Options", "nosniff")
         .body(if request.method() == Method::HEAD { Full::new(Bytes::new()) } else { Full::new(Bytes::from(bytes)) })
         .unwrap();
