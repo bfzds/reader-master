@@ -6,11 +6,12 @@ describe('Tauri TXT import smoke flow', () => {
     const fixturePath = process.env.TAURI_E2E_FIXTURE_PATH;
     assert.ok(fixturePath, 'E2E fixture path is required');
 
+    await browser.url('http://127.0.0.1:2333/#!/');
     const currentUrl = await browser.getUrl();
     assert.match(currentUrl, /^http:\/\/127\.0\.0\.1:2333(?:\/|$)/);
 
     const listPage = await browser.$('#list_page');
-    await listPage.waitForExist({ timeout: 30000 });
+    await listPage.waitForDisplayed({ timeout: 30000 });
 
     const fileInput = await browser.$('#file');
     await fileInput.waitForExist({ timeout: 30000 });
