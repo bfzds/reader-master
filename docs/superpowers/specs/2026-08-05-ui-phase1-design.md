@@ -1,11 +1,11 @@
 # UI Phase 1 Design
 
 **Date:** 2026-08-05  
-**Scope:** P0-1 through P0-4 from `docs/superpowers/plans/2026-08-05-ui-optimization-plan.md`
+**Scope:** P0-1 through P0-3 from `docs/superpowers/plans/2026-08-05-ui-optimization-plan.md`
 
 ## Goal
 
-Improve the renderer's consistency and accessibility without changing reading behavior or the Tauri shell.
+Improve the renderer's visual and interaction consistency without changing reading behavior or the Tauri shell.
 
 ## Constraints
 
@@ -15,6 +15,7 @@ Improve the renderer's consistency and accessibility without changing reading be
 - Keep the fixed `127.0.0.1:2333` runtime origin unchanged.
 - Do not modify `artifacts/`, `asar_extracted/`, `node_modules/`, or `src-tauri/`.
 - Replace user-facing native `alert()` and `confirm()` calls in the active frontend.
+- Accessibility is out of scope. Do not add dedicated ARIA, screen-reader, keyboard-navigation, or accessibility acceptance requirements.
 
 ## Design
 
@@ -51,11 +52,9 @@ Add matching variables to `light.css` and `dark.css` for:
 
 Update `listpage.css` and any affected reader CSS to consume variables. Remove the current batch-bar hard-coded colors and correct the existing `--alert-color` reference to the defined theme text variable.
 
-### Tab and batch accessibility
+### Batch action behavior
 
-Update `IndexPage.setCurrentSubPage()` so exactly one tab has `aria-selected="true"` and `tabindex="0"`; all other tabs have `aria-selected="false"` and `tabindex="-1"`. The initial state is applied when the index page is first activated, without changing the existing slide animation.
-
-Give the dynamic batch action bar `role="toolbar"` and a localized `aria-label`. Its buttons use `type="button"`, localized visible labels, and disabled state for deletion when no items are selected. The selection count is exposed as live status text. Existing book selection behavior remains unchanged.
+Keep the existing batch selection behavior. The batch action bar uses localized visible labels and disables deletion when no items are selected. Do not add accessibility-specific behavior as part of this phase.
 
 ## Files
 
@@ -66,7 +65,6 @@ Modify:
 - `app_unpacked/src/js/data/options.js`
 - `app_unpacked/src/js/page/config/configpage.js`
 - `app_unpacked/src/js/data/storage.js`
-- `app_unpacked/src/js/page/read/index/indexpage.js`
 - `app_unpacked/src/js/i18n/locale/en.js`
 - `app_unpacked/src/js/i18n/locale/zh_cn.js`
 - `app_unpacked/src/js/i18n/locale/zh_tw.js`
@@ -82,7 +80,6 @@ Create:
 
 ## Testing
 
-The focused Node test checks that all locale objects contain the same Phase 1 keys, dynamic messages format counts and errors, and active frontend modules contain no native `alert()` or `confirm()` calls. The modal focus and visual behavior are verified manually in Tauri dev mode.
+The focused Node test checks that all locale objects contain the same Phase 1 keys, dynamic messages format counts and errors, and active frontend modules contain no native `alert()` or `confirm()` calls. The modal behavior and visual states are verified manually in Tauri dev mode.
 
-Manual regression covers bookshelf import, folder refresh, batch deletion, backup/restore, migration/config errors, light/dark themes, and keyboard navigation of the reading index tabs.
-
+Manual regression covers bookshelf import, folder refresh, batch deletion, backup/restore, migration/config errors, and light/dark themes.
