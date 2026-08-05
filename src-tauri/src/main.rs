@@ -466,7 +466,11 @@ fn create_main_window(app: &AppHandle, config: &AppConfig) -> Result<WebviewWind
 }
 
 fn main() {
-  tauri::Builder::default()
+  let builder = tauri::Builder::default();
+  #[cfg(feature = "e2e-webdriver")]
+  let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
+
+  builder
     .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
       if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -557,8 +561,24 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-  use super::{is_path_within, should_create_main_window};
+  use super::{
+    authorized_file_path, authorized_folder, is_path_within, is_supported_book_file,
+    normalize_window_size, sanitize_filename, should_create_main_window, writable_file_path,
+    AppConfig, ImportFolderRegistry, ImportFolderState, MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH,
+  };
+  use std::collections::HashMap;
+  use std::fs::{create_dir_all, remove_dir_all, write};
   use std::path::{Path, PathBuf};
+  use std::sync::Mutex;
+  use std::time::{SystemTime, UNIX_EPOCH};
+
+  fn temp_test_root(label: &str) -> PathBuf {
+    let suffix = SystemTime::now()
+      .duration_since(UNIX_EPOCH)
+      .expect("system clock must be after epoch")
+      .as_nanos();
+    std::env::temp_dir().join(format!("treader-{label}-{}-{suffix}", std::process::id()))
+  }
 
   #[test]
   fn existing_main_window_is_reused() {
@@ -575,5 +595,92 @@ mod tests {
     let root = PathBuf::from("books");
     assert!(is_path_within(&root, &root.join("novel.txt")));
     assert!(!is_path_within(&root, Path::new("outside/novel.txt")));
+  }
+
+  #[test]
+  fn supported_book_extensions_are_case_insensitive_and_narrow() {
+    assert!(is_supported_book_file(Path::new("book.TXT")));
+    assert!(is_supported_book_file(Path::new("book.Gz")));
+    assert!(is_supported_book_file(Path::new("book.epub")));
+    assert!(!is_supported_book_file(Path::new("book.pdf")));
+    assert!(!is_supported_book_file(Path::new("book")));
+  }
+
+  #[test]
+  fn filenames_are_sanitized_without_empty_targets() {
+    assert_eq!(sanitize_filename(""), "book.txt");
+    assert_eq!(sanitize_filename("  "), "book.txt");
+    assert_eq!(sanitize_filename("../outside.txt"), ".._outside.txt");
+    assert_eq!(sanitize_filename("C:\\outside.txt"), "C__outside.txt");
+  }
+
+  #[test]
+  fn authorized_file_path_accepts_existing_file_and_rejects_missing_file() {
+    let root = temp_test_root("authorized-file");
+    create_dir_all(&root).expect("create test root");
+    let canonical_root = std::fs::canonicalize(&root).expect("canonicalize test root");
+    write(root.join("book.txt"), b"content").expect("write test book");
+
+    assert_eq!(
+      authorized_file_path(&canonical_root, "book.txt").expect("existing file is authorized"),
+      std::fs::canonicalize(root.join("book.txt")).expect("canonicalize test book")
+    );
+    assert!(authorized_file_path(&canonical_root, "missing.txt").is_err());
+
+    remove_dir_all(&root).expect("remove test root");
+  }
+
+  #[test]
+  fn writable_file_path_stays_at_authorized_root() {
+    let root = temp_test_root("writable-file");
+    create_dir_all(&root).expect("create test root");
+    let canonical_root = std::fs::canonicalize(&root).expect("canonicalize test root");
+
+    assert_eq!(
+      writable_file_path(&canonical_root, "new.txt").expect("new file is writable"),
+      canonical_root.join("new.txt")
+    );
+    assert_eq!(
+      writable_file_path(&canonical_root, "").expect("empty filename gets a safe default"),
+      canonical_root.join("book.txt")
+    );
+
+    remove_dir_all(&root).expect("remove test root");
+  }
+
+  #[test]
+  fn authorized_folder_requires_registered_live_directory() {
+    let root = temp_test_root("authorized-folder");
+    create_dir_all(&root).expect("create test root");
+    let canonical_root = std::fs::canonicalize(&root).expect("canonicalize test root");
+    let mut folders = HashMap::new();
+    folders.insert("known-folder".to_string(), canonical_root.clone());
+    let state = ImportFolderState(Mutex::new(ImportFolderRegistry {
+      selected_id: Some("known-folder".to_string()),
+      folders,
+    }));
+
+    assert_eq!(
+      authorized_folder(&state, "known-folder").expect("registered folder is authorized"),
+      canonical_root
+    );
+    assert!(authorized_folder(&state, "forged-folder").is_err());
+
+    remove_dir_all(&root).expect("remove test root");
+    assert!(authorized_folder(&state, "known-folder").is_err());
+  }
+
+  #[test]
+  fn window_size_normalization_enforces_minimum_dimensions() {
+    let normalized = normalize_window_size(&super::WindowSize {
+      width: 1,
+      height: 1,
+    });
+    assert_eq!(normalized.width, MIN_WINDOW_WIDTH);
+    assert_eq!(normalized.height, MIN_WINDOW_HEIGHT);
+
+    let config = AppConfig::default();
+    assert_eq!(config.window_size.width, 1920);
+    assert_eq!(config.window_size.height, 1080);
   }
 }

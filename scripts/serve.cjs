@@ -4,7 +4,9 @@ const path = require('path');
 
 const HOST = '127.0.0.1';
 const PORT = 2333;
-const ROOT = path.resolve(__dirname, '..', 'app_unpacked', 'src');
+const ROOT = path.resolve(
+  process.env.TAURI_E2E_FRONTEND_ROOT || path.resolve(__dirname, '..', 'app_unpacked', 'src'),
+);
 const CONTENT_SECURITY_POLICY = fs.readFileSync(
   path.resolve(__dirname, '..', 'config', 'csp-dev.txt'),
   'utf8',

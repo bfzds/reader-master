@@ -7,14 +7,9 @@
  * defined by the Mozilla Public License, v. 2.0.
  */
 
-const version = /* VERSION */"20260805-e409b9399f43"/* VERSION */; // eslint-disable-line-line quotes
+const version = /* VERSION */"20260805-eb5055e493f6"/* VERSION */; // eslint-disable-line-line quotes
 
 const resourceList = [
-  './help/about.html',
-  './help/credits.html',
-  './help/en.html',
-  './help/zh_cn.html',
-  './help/privacy.html',
   './css/common/input.css',
   './css/common/main.css',
   './css/icons/icons.css',

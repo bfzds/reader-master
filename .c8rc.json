@@ -1,0 +1,18 @@
+{
+  "all": true,
+  "include": [
+    "app_unpacked/src/js/data/**/*.js",
+    "app_unpacked/src/js/text/**/*.js",
+    "app_unpacked/src/js/platform/**/*.js"
+  ],
+  "exclude": [
+    "**/*.test.js",
+    "**/*.test.mjs"
+  ],
+  "exclude-after-remap": true,
+  "reporter": [
+    "text",
+    "lcov"
+  ],
+  "reports-dir": "artifacts/coverage"
+}
