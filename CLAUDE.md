@@ -112,6 +112,7 @@ The read experience is split into smaller modules under `app_unpacked/src/js/pag
 
 - Preserve the existing MPL license header blocks at the top of frontend JS/HTML files when editing them.
 - Match the existing style: plain ES modules, direct DOM manipulation, minimal abstraction, and localized targeted changes.
+- Accessibility is out of scope for this project. Do not add dedicated ARIA semantics, screen-reader behavior, keyboard-navigation behavior, or accessibility-focused acceptance criteria unless a task explicitly requests them. Keep existing semantics when they are already part of the current UI and do not add unnecessary maintenance work.
 - This repo includes a domestic mirror in the root Tauri scripts via `TAURI_BUNDLER_TOOLS_GITHUB_MIRROR_TEMPLATE`; keep that intact unless the task is specifically about changing download strategy.
 - Be careful with changes to the local server host/port, service worker behavior, or storage keys; those can affect persistence and startup behavior across the whole app.
 
