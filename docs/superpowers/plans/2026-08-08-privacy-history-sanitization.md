@@ -4,7 +4,7 @@
 
 **目标：** 从公开仓库的当前版本和 Git 历史中清除本机路径与个人邮箱。
 
-**方案：** 在独立 Git 工作区中执行。当前版本停止跟踪本机 Claude 配置，并将文档中的本机路径替换为占位符；随后使用 Git 的历史重写功能更新全部可访问分支，最后强制推送并扫描验证。
+**方案：** 在独立的本地 Git 镜像副本中执行。当前版本停止跟踪本机 Claude 配置，并将文档中的本机路径替换为占位符；随后在镜像中使用 Git 的历史重写功能更新全部可访问分支，最后强制推送并扫描验证。
 
 **技术栈：** Git、PowerShell、Node.js 项目测试。
 
@@ -21,7 +21,8 @@
 
 **文件：**
 - 修改：`.gitignore`
-- 创建：`.worktrees/privacy-history-sanitization/`
+- 创建：`.worktrees/privacy-rewrite-mirror.git/`
+- 创建：`.worktrees/privacy-history-rewrite/`
 
 - [ ] **步骤 1：忽略项目内工作区目录**
 
@@ -40,13 +41,18 @@ git add -- .gitignore
 git commit --only -m "chore: ignore local worktrees" -- .gitignore
 ```
 
-- [ ] **步骤 3：创建隔离工作区**
+- [ ] **步骤 3：创建隔离镜像和重写工作区**
 
 运行：
 
 ```powershell
-git worktree add .worktrees/privacy-history-sanitization -b codex/privacy-history-sanitization
+$remoteUrl = git remote get-url origin
+git clone --mirror . .worktrees/privacy-rewrite-mirror.git
+git --git-dir=.worktrees/privacy-rewrite-mirror.git remote set-url origin $remoteUrl
+git --git-dir=.worktrees/privacy-rewrite-mirror.git worktree add .worktrees/privacy-history-rewrite codex/privacy-history-sanitization
 ```
+
+预期：镜像拥有当前已提交的全部分支；历史重写只影响镜像，当前主工作区的分支引用不会被直接改写。
 
 - [ ] **步骤 4：获取远程引用并检查基线**
 
