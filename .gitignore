@@ -10,6 +10,7 @@
 # Local extracted references and packaged runtime artifacts
 /asar_extracted/
 /artifacts/
+/.worktrees/
 
 # Local diagnostics
 /*.log
