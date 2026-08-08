@@ -191,12 +191,11 @@ npm test
 运行：
 
 ```powershell
-$remoteBranches = git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin/ | Where-Object { $_ -and $_ -ne 'HEAD' }
+$remoteBranches = @('codex/enforce-rust-formatting', 'codex/fix-release-startup')
+git push --force origin 'codex/privacy-history-sanitization:main'
 foreach ($branch in $remoteBranches) {
-  git push --force origin "+refs/remotes/origin/$branch:refs/heads/$branch"
+  git push --force origin "refs/remotes/origin/$branch:refs/heads/$branch"
 }
-git push --force --all origin
-git push --force --tags origin
 ```
 
 - [ ] **步骤 4：确认远程引用与本地一致**
