@@ -89,7 +89,7 @@ git rm --cached -- .claude/settings.local.json
 运行：
 
 ```powershell
-git grep -I -n -E '[A-Za-z]:\\Users\\|3167097415@qq\.com' -- . ':!src-tauri/Cargo.lock'
+git grep -I -n -E '[A-Za-z]:\\Users\\|[A-Za-z0-9._%+-]+@qq\.com' -- . ':!src-tauri/Cargo.lock'
 git check-ignore -v .claude/settings.local.json
 Test-Path .claude/settings.local.json
 ```
@@ -120,7 +120,7 @@ const fs = require('node:fs');
 const file = 'docs/archive/project-technical-doc-2026-07-30.md';
 if (fs.existsSync(file)) {
   const original = fs.readFileSync(file, 'utf8');
-  const sanitized = original.replaceAll('C:\\Users\\30575', '<USER_HOME>');
+  const sanitized = original.replaceAll(process.env.USERPROFILE, '<USER_HOME>');
   if (sanitized !== original) {
     fs.writeFileSync(file, sanitized);
   }
@@ -136,8 +136,10 @@ if (fs.existsSync(file)) {
 ```powershell
 $env:HISTORY_SANITIZER = Join-Path $env:TEMP 'treader-history-sanitizer.cjs'
 $env:FILTER_BRANCH_SQUELCH_WARNING = '1'
+$env:PERSONAL_EMAIL = git log --all --format='%ae%n%ce' | Sort-Object -Unique | Where-Object { $_ -like '*@qq.com' } | Select-Object -First 1
+if (-not $env:PERSONAL_EMAIL) { throw '未找到待脱敏的个人邮箱。' }
 git filter-branch --force `
-  --env-filter 'if [ "$GIT_AUTHOR_EMAIL" = "<PERSONAL_EMAIL>" ]; then GIT_AUTHOR_NAME="tReader Contributor"; GIT_AUTHOR_EMAIL="contributor@users.noreply.github.com"; fi; if [ "$GIT_COMMITTER_EMAIL" = "<PERSONAL_EMAIL>" ]; then GIT_COMMITTER_NAME="tReader Contributor"; GIT_COMMITTER_EMAIL="contributor@users.noreply.github.com"; fi; export GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL' `
+  --env-filter 'if [ "$GIT_AUTHOR_EMAIL" = "$PERSONAL_EMAIL" ]; then GIT_AUTHOR_NAME="tReader Contributor"; GIT_AUTHOR_EMAIL="contributor@users.noreply.github.com"; fi; if [ "$GIT_COMMITTER_EMAIL" = "$PERSONAL_EMAIL" ]; then GIT_COMMITTER_NAME="tReader Contributor"; GIT_COMMITTER_EMAIL="contributor@users.noreply.github.com"; fi; export GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL' `
   --tree-filter 'rm -f .claude/settings.local.json; node "$HISTORY_SANITIZER"' `
   -- --all
 ```
@@ -164,7 +166,7 @@ git gc --prune=now
 ```powershell
 $revisions = git rev-list --all
 foreach ($revision in $revisions) {
-  git grep -I -n -E '[A-Za-z]:\\Users\\|3167097415@qq\.com' $revision -- 2>$null
+  git grep -I -n -E '[A-Za-z]:\\Users\\|[A-Za-z0-9._%+-]+@qq\.com' $revision -- 2>$null
 }
 ```
 
